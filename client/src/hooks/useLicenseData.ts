@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { License, LicenseFilters, SortConfig } from "@/types/license";
 import { apiRequest } from "@/lib/queryClient";
 
-export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig) {
+export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig, page: number = 1, pageSize: number = 10) {
   const queryClient = useQueryClient();
-  const queryKey = ['/api/licenses', filters, sortConfig];
+  const queryKey = ['/api/licenses', filters, sortConfig, page, pageSize];
 
   // Fetch licenses
   const { data, isLoading, error, refetch } = useQuery({
@@ -20,6 +20,8 @@ export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig) 
       
       queryParams.append('sortBy', sortConfig.key);
       queryParams.append('sortDirection', sortConfig.direction);
+      queryParams.append('page', page.toString());
+      queryParams.append('pageSize', pageSize.toString());
       
       return fetch(`/api/licenses?${queryParams.toString()}`, {
         credentials: 'include'

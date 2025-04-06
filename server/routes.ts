@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { db } from "./db";
+// Pas besoin d'importer db car il n'est pas utilisé
 import { nuxiDevLicenseService } from "./services/licenseService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -14,7 +14,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         identifiantPC, 
         onlyNuxiDev,
         sortBy = "ID",
-        sortDirection = "desc" 
+        sortDirection = "desc",
+        page = "1",
+        pageSize = "10"
       } = req.query as Record<string, string>;
       
       const filters = {
@@ -25,9 +27,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         onlyNuxiDev: onlyNuxiDev === "true"
       };
       
+      const pageNum = parseInt(page, 10) || 1;
+      const pageSizeNum = parseInt(pageSize, 10) || 10;
+      
       const licenses = await nuxiDevLicenseService.getLicenses(
         filters, 
-        { key: sortBy, direction: sortDirection as "asc" | "desc" }
+        { key: sortBy, direction: sortDirection as "asc" | "desc" },
+        pageNum,
+        pageSizeNum
       );
       
       res.json(licenses);

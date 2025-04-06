@@ -1,53 +1,103 @@
-import { executeRawQuery, getDb } from '../db';
+import { executeRawQuery, getDb, describeTable } from '../db';
 import { LicenseFilters, SortConfig } from '../../client/src/types/license';
 import { nuxiDevLicenses } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 
+// Détecter si on utilise MySQL
+const useMySQL = process.env.DB_HOST ? true : false;
+
+// Ne pas appeler automatiquement au démarrage pour éviter de bloquer l'initialisation
+// Définissons une fonction qui peut être appelée plus tard
+async function exploreTableStructure() {
+  if (useMySQL) {
+    const tableName = process.env.LICENSE_TABLE_NAME || 'nuxi_dev_licenses';
+    try {
+      // Récupérer la structure de la table pour connaître les noms de colonnes réels
+      await describeTable(tableName);
+    } catch (err) {
+      console.error("Impossible d'examiner la structure de la table:", err);
+    }
+  }
+}
+
 class NuxiDevLicenseService {
+  // Récupérer le nom de table depuis les variables d'environnement ou utiliser la valeur par défaut
+  private tableName = process.env.LICENSE_TABLE_NAME || 'nuxi_dev_licenses';
+  
   /**
    * Get licenses with optional filtering and sorting
    */
-  async getLicenses(filters: LicenseFilters, sortConfig: SortConfig) {
+  async getLicenses(filters: LicenseFilters, sortConfig: SortConfig, page: number = 1, pageSize: number = 10) {
     // Log received filters for debugging
     console.log('Received filters:', JSON.stringify(filters));
     console.log('Received sort config:', JSON.stringify(sortConfig));
+    console.log('Page:', page, 'Page size:', pageSize);
+    
+    // Calculer l'offset pour la pagination
+    const offset = (page - 1) * pageSize;
     
     // Build raw SQL query
     let query = `
       SELECT * 
-      FROM nuxi_dev_licenses
+      FROM ${this.tableName}
       WHERE 1=1
     `;
     
     const queryParams: any[] = [];
     
+    // Utiliser ? pour MySQL et $n pour PostgreSQL
+    const paramPlaceholder = useMySQL ? '?' : `$\${queryParams.length + 1}`;
+    
     // Apply filters
     if (filters.onlyNuxiDev) {
-      query += ` AND "nom_soft" = $${queryParams.length + 1}`;
-      queryParams.push('NuxiDev');
+      if (!useMySQL) {
+        // Pour PostgreSQL
+        query += ` AND "NomSoft" = $${queryParams.length + 1}`;
+        queryParams.push('NuxiDev');
+      } else {
+        // Pour MySQL
+        query += ` AND NomSoft = ${paramPlaceholder}`;
+        queryParams.push('NuxiDev');
+      }
       console.log('Added filter for NuxiDev only');
     }
     
     if (filters.idClient) {
-      query += ` AND "id_client" = $${queryParams.length + 1}`;
+      if (!useMySQL) {
+        query += ` AND "IDClient" = $${queryParams.length + 1}`;
+      } else {
+        query += ` AND IDClient = ${paramPlaceholder}`;
+      }
       queryParams.push(filters.idClient);
       console.log('Added filter for idClient:', filters.idClient);
     }
     
     if (filters.idSynchro) {
-      query += ` AND "id_synchro" = $${queryParams.length + 1}`;
+      if (!useMySQL) {
+        query += ` AND "IDSynchro" = $${queryParams.length + 1}`;
+      } else {
+        query += ` AND IDSynchro = ${paramPlaceholder}`;
+      }
       queryParams.push(filters.idSynchro);
       console.log('Added filter for idSynchro:', filters.idSynchro);
     }
     
     if (filters.serial) {
-      query += ` AND "serial" LIKE $${queryParams.length + 1}`;
+      if (!useMySQL) {
+        query += ` AND "Serial" LIKE $${queryParams.length + 1}`;
+      } else {
+        query += ` AND Serial LIKE ${paramPlaceholder}`;
+      }
       queryParams.push(`%${filters.serial}%`);
       console.log('Added filter for serial containing:', filters.serial);
     }
     
     if (filters.identifiantPC) {
-      query += ` AND "identifiant_pc" LIKE $${queryParams.length + 1}`;
+      if (!useMySQL) {
+        query += ` AND "IdentifiantPC" LIKE $${queryParams.length + 1}`;
+      } else {
+        query += ` AND IdentifiantPC LIKE ${paramPlaceholder}`;
+      }
       queryParams.push(`%${filters.identifiantPC}%`);
       console.log('Added filter for identifiantPC containing:', filters.identifiantPC);
     }
@@ -63,7 +113,20 @@ class NuxiDevLicenseService {
                 sortKey.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
     }
     console.log('Sorting by:', sortConfig.key, '-> converted to DB column:', sortKey);
-    query += ` ORDER BY "${sortKey}" ${sortConfig.direction.toUpperCase()}`;
+    
+    // Ne pas entourer les noms de colonnes avec des guillemets pour MySQL
+    if (useMySQL) {
+      query += ` ORDER BY ${sortKey} ${sortConfig.direction.toUpperCase()}`;
+    } else {
+      query += ` ORDER BY "${sortKey}" ${sortConfig.direction.toUpperCase()}`;
+    }
+    
+    // Ajout de la pagination
+    if (useMySQL) {
+      query += ` LIMIT ${pageSize} OFFSET ${offset}`;
+    } else {
+      query += ` LIMIT ${pageSize} OFFSET ${offset}`;
+    }
     
     // Log final query and parameters
     console.log('Executing SQL query:', query);
@@ -90,11 +153,18 @@ class NuxiDevLicenseService {
    * Get a single license by ID
    */
   async getLicenseById(id: number) {
-    const query = `
-      SELECT * 
-      FROM nuxi_dev_licenses 
-      WHERE "id" = $1
-    `;
+    // Adapter la syntaxe SQL en fonction du type de base de données
+    const query = useMySQL 
+      ? `
+          SELECT * 
+          FROM ${this.tableName} 
+          WHERE id = ?
+        `
+      : `
+          SELECT * 
+          FROM ${this.tableName} 
+          WHERE "id" = $1
+        `;
     
     const results = await executeRawQuery(query, [id]);
     const licenses = results as any[];
@@ -128,7 +198,7 @@ class NuxiDevLicenseService {
     const columns = Object.keys(dataWithoutId).map(key => {
       // Special case for ID which needs to become "id" not "_i_d"
       if (key === 'ID') {
-        return '"id"';
+        return useMySQL ? 'id' : '"id"';
       }
       
       // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
@@ -136,19 +206,41 @@ class NuxiDevLicenseService {
                         key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
       
       console.log('Converting property:', key, '-> to DB column:', columnName);
-      return `"${columnName}"`;
+      
+      // Enlever les guillemets pour MySQL
+      return useMySQL ? `${columnName}` : `"${columnName}"`;
     });
     
-    const placeholders = Array.from({ length: columns.length }, (_, i) => `$${i + 1}`).join(', ');
     const values = Object.values(dataWithoutId);
     
+    let placeholders;
+    if (useMySQL) {
+      // Utiliser ? pour les paramètres en MySQL
+      placeholders = Array(columns.length).fill('?').join(', ');
+    } else {
+      // Utiliser $n pour les paramètres en PostgreSQL
+      placeholders = Array.from({ length: columns.length }, (_, i) => `$${i + 1}`).join(', ');
+    }
+    
     const query = `
-      INSERT INTO nuxi_dev_licenses (${columns.join(', ')})
+      INSERT INTO ${this.tableName} (${columns.join(', ')})
       VALUES (${placeholders})
-      RETURNING *
+      ${useMySQL ? '' : 'RETURNING *'}
     `;
     
     const results = await executeRawQuery(query, values);
+    
+    // Pour MySQL, faire une requête supplémentaire pour obtenir la ligne insérée
+    if (useMySQL) {
+      // On suppose que la dernière insertion a été réussie et que nous pouvons obtenir l'ID généré
+      const insertId = (results as any).insertId;
+      if (insertId) {
+        const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
+        const selectResults = await executeRawQuery(selectQuery, [insertId]);
+        const insertedRows = selectResults as any[];
+        return insertedRows;
+      }
+    }
     const insertedRows = results as any[];
     
     if (insertedRows.length === 0) {
@@ -189,7 +281,13 @@ class NuxiDevLicenseService {
       }
       
       console.log('UPDATE - Converting property:', key, '-> to DB column:', columnName);
-      return `"${columnName}" = $${index + 1}`;
+      
+      // Différent format selon la base de données
+      if (useMySQL) {
+        return `${columnName} = ?`;
+      } else {
+        return `"${columnName}" = $${index + 1}`;
+      }
     });
     
     const values = Object.values(dataToUpdate);
@@ -197,14 +295,28 @@ class NuxiDevLicenseService {
     // Add ID to values array
     values.push(id);
     
-    const query = `
-      UPDATE nuxi_dev_licenses
-      SET ${updates.join(', ')}
-      WHERE "id" = $${values.length}
-      RETURNING *
-    `;
+    const query = useMySQL
+      ? `
+          UPDATE ${this.tableName}
+          SET ${updates.join(', ')}
+          WHERE id = ?
+        `
+      : `
+          UPDATE ${this.tableName}
+          SET ${updates.join(', ')}
+          WHERE "id" = $${values.length}
+          RETURNING *
+        `;
     
     const results = await executeRawQuery(query, values);
+    
+    // Pour MySQL, faire une requête supplémentaire pour obtenir la ligne mise à jour
+    if (useMySQL) {
+      const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
+      const selectResults = await executeRawQuery(selectQuery, [id]);
+      const updatedRows = selectResults as any[];
+      return updatedRows;
+    }
     const updatedRows = results as any[];
     
     if (updatedRows.length === 0) {

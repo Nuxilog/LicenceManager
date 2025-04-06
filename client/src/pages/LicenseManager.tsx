@@ -24,6 +24,9 @@ export default function LicenseManager() {
     direction: "desc" as "asc" | "desc"
   });
   
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
 
@@ -34,10 +37,12 @@ export default function LicenseManager() {
     refetch,
     createLicense,
     updateLicense 
-  } = useLicenseData(filters, sortConfig);
+  } = useLicenseData(filters, sortConfig, currentPage, pageSize);
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
+    // Réinitialiser à la première page lors du changement de filtres
+    setCurrentPage(1);
   };
 
   const handleSort = (key: string) => {
@@ -45,6 +50,8 @@ export default function LicenseManager() {
       key,
       direction: prev.key === key && prev.direction === "desc" ? "asc" : "desc"
     }));
+    // Réinitialiser à la première page lors du changement de tri
+    setCurrentPage(1);
   };
 
   const handleSelectLicense = (license: License) => {
@@ -149,6 +156,29 @@ export default function LicenseManager() {
         onSelectLicense={handleSelectLicense}
         selectedLicenseId={selectedLicense?.ID}
       />
+      
+      {/* Pagination */}
+      <div className="flex justify-center items-center my-4 space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1 || isLoading}
+        >
+          Précédent
+        </Button>
+        <span className="text-sm text-slate-600">
+          Page {currentPage}
+        </span>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setCurrentPage(prev => prev + 1)}
+          disabled={!licenses || licenses.length < pageSize || isLoading}
+        >
+          Suivant
+        </Button>
+      </div>
       
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-slate-900">Détails de la licence</h2>

@@ -88,21 +88,24 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   };
 
   const handleSelectChange = (name: string, value: string) => {
+    // Traiter "none" comme une valeur vide
+    const finalValue = value === "none" ? "" : value;
+    
     setFormData(prev => {
       if (!prev) return prev;
       
       // Special handling for Data1 field: update URL1
-      if (name === "Data1" && value) {
+      if (name === "Data1" && finalValue) {
         return {
           ...prev,
-          [name]: value,
-          URL1: `https://${value}/NuxiDev/${value}/`
+          [name]: finalValue,
+          URL1: `https://${finalValue}/NuxiDev/${finalValue}/`
         };
       }
       
       return {
         ...prev,
-        [name]: value
+        [name]: finalValue
       };
     });
   };
@@ -243,14 +246,14 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           <Label htmlFor="config">Choix de la configuration</Label>
           <Select 
             name="Tablettes"
-            value={formData.Tablettes || ""}
+            value={formData.Tablettes || "none"}
             onValueChange={(value) => handleSelectChange("Tablettes", value)}
           >
             <SelectTrigger id="config">
               <SelectValue placeholder="-" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">-</SelectItem>
+              <SelectItem value="none">-</SelectItem>
               {CONFIG_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -330,14 +333,14 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           <Label htmlFor="data1">SQL Serveur 1</Label>
           <Select 
             name="Data1"
-            value={formData.Data1 || ""}
+            value={formData.Data1 || "none"}
             onValueChange={(value) => handleSelectChange("Data1", value)}
           >
             <SelectTrigger id="data1">
               <SelectValue placeholder="-" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">-</SelectItem>
+              <SelectItem value="none">-</SelectItem>
               {SQL_SERVER_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -350,14 +353,14 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           <Label htmlFor="ftp1_hote">FTP Serveur 1</Label>
           <Select 
             name="FTP1_Hote"
-            value={formData.FTP1_Hote || ""}
+            value={formData.FTP1_Hote || "none"}
             onValueChange={(value) => handleSelectChange("FTP1_Hote", value)}
           >
             <SelectTrigger id="ftp1_hote">
               <SelectValue placeholder="-" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">-</SelectItem>
+              <SelectItem value="none">-</SelectItem>
               {FTP_SERVER_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
