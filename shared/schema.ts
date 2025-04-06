@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, datetime, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -28,7 +28,7 @@ export const nuxiDevLicenses = pgTable("nuxi_dev_licenses", {
   NomSoft: text("nom_soft"),
   NomPoste: text("nom_poste"),
   NomSession: text("nom_session"),
-  Date_DerUtilisation: datetime("date_der_utilisation"),
+  Date_DerUtilisation: timestamp("date_der_utilisation"),
   Version: text("version"),
   Data1: text("data1"),
   Data2: text("data2"),

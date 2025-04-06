@@ -1,35 +1,18 @@
-import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { sql } from 'drizzle-orm';
+import postgres from 'postgres';
 import 'dotenv/config';
+import * as schema from '@shared/schema';
 
-// Get MySQL connection parameters from environment variables
-const nuxiDevConfig = {
-  host: process.env.AUTH_MYSQL_NUXIDEV_HOST || 'sqlprive-dd25990-001.eu.clouddb.ovh.net',
-  port: parseInt(process.env.AUTH_MYSQL_NUXIDEV_PORT || '35217'),
-  user: process.env.AUTH_MYSQL_NUXIDEV_USER || 'UserBDD',
-  password: process.env.AUTH_MYSQL_NUXIDEV_PASSWORD || '99Un5yc4',
-  database: process.env.AUTH_MYSQL_NUXIDEV_DATABASE || 'NuxiDev2018',
-};
+const DATABASE_URL = process.env.DATABASE_URL || '';
 
-// Create a pool of connections for better performance
-const nuxiDevPool = mysql.createPool({
-  ...nuxiDevConfig,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+// Create PostgreSQL client
+const client = postgres(DATABASE_URL);
 
-export async function executeQuery(query: string, params: any[] = []) {
-  try {
-    const [results] = await nuxiDevPool.execute(query, params);
-    return results;
-  } catch (error) {
-    console.error("Database query error:", error);
-    throw error;
-  }
+// Create Drizzle instance
+export const db = drizzle(client, { schema });
+
+// For raw SQL queries
+export async function executeRawQuery(query: string, params: any[] = []) {
+  return client.unsafe(query, params);
 }
-
-export const db = {
-  nuxiDev: {
-    query: executeQuery,
-  },
-};
