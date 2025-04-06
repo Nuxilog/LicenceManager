@@ -1,0 +1,196 @@
+Je suis éditeur d’application, veux créer un outil interne de gestion des licences utilisateurs. J’ai 3 Type de logiciels et donc 3 types de licences qui ont chacuns leurs particularités de fonctionnement et leurs bases de données différentes. J’ai donc 3 bases MySQL pour stocker les licences.
+Il faut anticiper et prévoir d’avances ces 3 types biens que nous allons commencer par la première uniquement
+Licences NuxiDev
+Licences NuxiSAV
+Licences Studio
+
+
+Voici l’accès et la  structure de la table pour les licences NuxiDev : 
+Les identifiants de connexions doivent impérativement être dans le .env de l’application 
+# Configuration de la base de données d'authentification (NuxiDev2018)
+AUTH_MYSQL_NUXIDEV_HOST=sqlprive-dd25990-001.eu.clouddb.ovh.net
+AUTH_MYSQL_NUXIDEV_PORT=35217
+AUTH_MYSQL_NUXIDEV_USER=UserBDD
+AUTH_MYSQL_NUXIDEV_PASSWORD=99Un5yc4
+AUTH_MYSQL_NUXIDEV_DATABASE=NuxiDev2018
+
+
+Structure : 
+
+
+Nom;Type;Interclassement;Attributs;Null;Valeur par d‚faut;Commentaires;Extra
+ID;int;;;Non;Aucun(e);;AUTO_INCREMENT
+IDClient;int;;;Oui;NULL;;
+IdentifiantPC;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Options;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+Serial;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+Suspendu;tinyint(1);;;Non;Aucun(e);;
+NomSoft;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+NomPoste;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+NomSession;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+Date_DerUtilisation;datetime;;;Oui;NULL;;
+Version;varchar(20);utf8mb4_general_ci;;Oui;NULL;;
+Data1;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Data2;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP1_Hote;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP2_Hote;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP1_Identifiant;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP2_Identifiant;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP1_Mdp;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+FTP2_Mdp;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Data_Actif;int;;;Oui;NULL;;
+FTP_Actif;int;;;Oui;NULL;;
+URL1;varchar(150);utf8mb4_general_ci;;Oui;NULL;;
+URL2;varchar(150);utf8mb4_general_ci;;Oui;NULL;;
+IDSynchro;varchar(50);utf8mb4_general_ci;;Oui;NULL;;
+NbRun;int;;;Oui;NULL;;
+Date_LimiteUtil;date;;;Oui;NULL;;
+Terminaux;longtext;utf8mb4_general_ci;;Oui;NULL;;
+Tablettes;longtext;utf8mb4_general_ci;;Oui;NULL;;
+MrqBlancheNum;int;;;Oui;NULL;;
+Upload1;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Upload2;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Secu2Srv1;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Info;varchar(255);utf8mb4_general_ci;;Oui;NULL;;
+ConfigConnecteur;longtext;utf8mb4_general_ci;;Oui;NULL;;
+Premium;tinyint(1);;;Oui;NULL;;
+MDP_Premium;varchar(100);utf8mb4_general_ci;;Oui;NULL;;
+Autorisations_Premium;varchar(255);utf8mb4_general_ci;;Oui;NULL;;
+ConfigMobile;longtext;utf8mb4_general_ci;;Oui;NULL;;
+DateClient;date;;;Oui;NULL;;
+Partenaire;tinyint(1);;;Oui;NULL;;
+
+
+—-----------------------------
+Pour NuxiDev, j’ai besoin d’un tableau de visualisation des licences et d’une partie saisie des éléments sous forme de formulaire.
+Le tableau doit être affichée par défaut par la clé primaire ID  ordre décroissant
+Le tableau doit être filtrable selon différents critères comme 
+Numéro Client (IDClient)
+ID de Synchro (IDSynchro)
+Numéro de licence (Serial)
+Identifiant PC (IdentifiantPC)
+
+
+L’odre de classement possible du tableau doit être par défaut la clé primaire ID  ordre décroissant mais doit pouvoir être classé par Numéro Client (IDClient), ID de Synchro (IDSynchro), Dernière Utilisation (Date_DerUtilisation)
+
+Une option de filtre supplémentaire et cumulatif aux autres doit est “Uniquement NuxiDev”, 
+par défaut elle doit être coché cette coche ajoute une condition au filtre NomSoft = ‘Nuxidev’ si elle est coché et supprimer cette condition si elle est décochée. Je rappelle qu’elle doit être cumulatives aux autres condition de filtres libre vu precedemment.
+
+
+Les colonnes visibles dans le tableau seront : 
+
+Nom
+ID
+IDClient
+IDSynchro
+Version
+Premium
+MDP_Premium
+Serial
+Suspendu
+Date_DerUtilisation
+Date_LimiteUtil
+Options
+IdentifiantPC
+NbRun
+Autorisations_Premium
+
+
+
+
+
+
+
+
+
+
+La sélection d’une ligne du tableau passe cette ligne en mode édition dans la partie formulaire. Penser à créer un bouton “Ajouter une licence” qui réinitialise les valeurs du formulaire par défaut afin de pouvoir créer une licence rapidement
+
+
+Le formulaire doit intégrer les éléments suivants : 
+En entête informative : 
+Zone de saisie, Affichage seulement, ID (ID)
+Zone de saisie, Affichage seulement, Dernière utilisation (Date_DerUtilisation) Format Date Heure
+Zone de saisie, Affichage seulement, Version (Version)
+Zone de saisie, En saisie, Numéro client (IDClient)
+Zone de saisie, En saisie Alphanumerique Majuscule, combo SQL Serveur 1 (Data1) L’Operateur va saisir des lettres et en sortie de zone tu dois faire une addition des codes ascii décimale de chaque lettre et concaténer le résultat aux lettres exemple : je saisie NUXIDEVD et en sortie de zone ça donne NUXIDEVD615
+Zone de saisie, En saisie, Serial (Serial) , en valeur par défaut d'initialisation pour la création d’une nouvelle licence du doit générer un serial aléatoire ayant ce format en exemple “B24G-9FCD-5F9F-ECE2-HHD2” soit 5 series alphanumérique en majuscules séparé par des -
+CheckBox, En saisie, Licence Premium (Premium) valeur 0 ou 1 , valeur par défaut 0
+Zone de saisie, En saisie, mot de passe Prémium (MDP_Premium), si je coche Premium alors j’affecte par défaut la valeur Numéro client (IDClient) comme valeur de mot de passe. Si je décoche je vide et supprime la chaine saisie dans mot de passe Prémium.
+Combo Choix de la configuration (Tablettes) , Valeurs du combo : 
+Valeur Affichée "" / Valeur retournée  ""
+Valeur Affichée "EBP CRM OL -> GesCom NuxiDev" / Valeur retournée  "1;EBP CRM Open Line;EBPCRM_V3|2;EBP CRM Open Line;GesCom"
+Valeur Affichée "EBP Gescom OL -> GesCom NuxiDev " / Valeur retournée  "1;EBP GesCom Open Line;EBPGesComOL|2;EBP Gestion Open Line;GesCom"
+Valeur Affichée "EBP Gestion PGI OL -> GesCom NuxiDev " / Valeur retournée  "1;EBP GesCom + CRM Open Line;EBP_ERP_OL|2;EBP PGI Open Line;GesCom"
+Valeur Affichée "EBP Bâtiment PGI OL -> GesCom NuxiDev " / Valeur retournée  "1;EBP Bâtiment + CRM Open Line;EBP_BAT_CRM_OL|2;EBP PGI Open Line;GesCom"
+Valeur Affichée "EBP Gescom C++ -> GesCom NuxiDev " / Valeur retournée  "1;EBP GesCom Vx;EBPGesComVx|2;EBP Gestion C++;GesCom"
+Valeur Affichée "EBP Bâtiment Delphi -> GesCom NuxiDev " / Valeur retournée  "1;EBP Bâtiment;EBPBat|2;EBP Bâtiment;GesCom"
+Valeur Affichée "EBP Bâtiment OLT -> GesCom NuxiDev " / Valeur retournée  "1;EBP Bâtiment Open Line;EBPBatOLT|2;EBP Bâtiment Open Line;GesCom"
+Valeur Affichée "WaveSoft PGI -> GesCom NuxiDev " / Valeur retournée  "1;WaveSoft PGI;WaveSoftGesCom|2;Gestion Commerciale NuxiDev;GesCom"
+Valeur Affichée "EBP Gescom SaaS -> GesCom NuxiDev " / Valeur retournée  "1;EBP GesCom SaaS;EBPGesComSaaS|2;EBP Gestion Open Line;GesCom"
+Valeur Affichée "EBP Bâtiment SaaS -> GesCom NuxiDev " / Valeur retournée  "1;EBP Bâtiment SaaS;EBPBatSaaS|2;EBP Bâtiment Open Line;GesCom"
+Valeur Affichée "Divalto -> GesCom NuxiDev " / Valeur retournée  "1;Divalto GesCom;Divaltio|2;Divalto;GesCom"
+Valeur Affichée "DreamFlore -> GesCom NuxiDev " / Valeur retournée  "1;DreamFlore;DREAMFLORE_V3|2;DreamFlore Mobile;GesCom"
+Valeur Affichée "Sage Api Négoce -> GesCom NuxiDev " / Valeur retournée  "1;Sage Api Négoce Evolution;ApiNegoce|2;ApiNégoce;GesCom"
+Valeur Affichée "Sage Api Batigest Std -> GesCom NuxiDev " / Valeur retournée  "1;Sage Api Batigest Std;ApiBatiGestStd|2;Batigest Std;GesCom"
+Valeur Affichée "Sage Api Batigest Evol -> GesCom NuxiDev " / Valeur retournée  "1;Sage Api Batigest Evol;ApiBatiGestEvol|2;Batigest Evol;GesCom"
+Valeur Affichée "Sage API2S -> GesCom NuxiDev " / Valeur retournée  "1;Sage API Multiservices;API2S|2;ApiServices;GesCom"
+Valeur Affichée "Sage i7 -> GesCom NuxiDev " / Valeur retournée  "1;Sage i7;Sagei7|2;Sage i7;GesCom"
+Valeur Affichée "Gestimum GesCom -> GesCom NuxiDev " / Valeur retournée  "1;Gestimum GesCom;Gestimum|2;Gestimum;GesCom"
+
+
+
+
+
+
+
+
+Le corps de la licence : 
+**Combo : Nom du Soft (NomSoft) valeur par défaut "NuxiDev"**
+Valeur Affichée "NuxiDev Générique" / Valeur retournée "NuxiDev"
+Valeur Affichée "NuxiTempo" / Valeur retournée "NuxiTempo"
+Valeur Affichée "NuxiTempo Light" / Valeur retournée "NuxiTempoLight"
+Valeur Affichée "EBP Gestion co OL" / Valeur retournée "NuxiDevEBPGestionCo"
+Valeur Affichée "EBP Bâtiment" / Valeur retournée "NuxiDevEBPBat"
+Valeur Affichée "EBP Gestion co Vx" / Valeur retournée "NuxiDevEBPGestCoVx"
+Valeur Affichée "Sage Batigest Evolution" / Valeur retournée "NuxiDevBatigest"
+Valeur Affichée "Sage Batigest Standard" / Valeur retournée "NuxiDevBatigestSTD"
+Valeur Affichée "Sage 100 & i7" / Valeur retournée "NuxiDevSage100"
+Valeur Affichée "Sage Api multiservices" / Valeur retournée "NuxiDevApiMultiS"
+Valeur Affichée "Sage Api Négoce" / Valeur retournée "NuxiDevApiNégoce"
+
+
+**Zone de saisie, En saisie, nombre de terminaux** 
+Cette zone doit alimenter la rubrique Options en concaténant  nombre de terminaux  + ; + Nom du Soft (NomSoft) + ; + 0
+Pare exemple pour l’ID de synchro “JSEMAINTENANCE1029” pour 3 terminaux la valeur à stocker dans Options sera : “3;JSEMAINTENANCE1029;0” . Pour l’affichage il faudra donc faire l’opération inverse, prendre la premi_re valeur séparée par des points virgules de la rubrique Options pour l’afficher dans  nombre de terminaux du formulaire
+
+
+**Zone de saisie, En saisie, Date Limite d’utilisation (Date_LimiteUtil), format date** 
+elle peut être vide ou null en saisie et en affichage. 
+
+
+**Case à cocher, En saisie, Suspendu (Suspendu), valeur 0 ou 1** 
+
+
+**Combo : SQL Serveur 1 (Data1) valeur par défaut “nuxidev.ovh”** 
+Valeur Affichée "" / Valeur retournée ""
+Valeur Affichée "Nuxidev.com" / Valeur retournée "nuxidev.com"
+Valeur Affichée "Nuxidev.fr" / Valeur retournée "nuxidev.fr"
+Valeur Affichée "Nuxidev.ovh" / Valeur retournée "nuxidev.ovh"
+Valeur Affichée "Nuxilog.fr" / Valeur retournée "nuxilog.fr"
+Valeur Affichée "Nuxilog.com" / Valeur retournée "nuxilog.com"
+
+
+**Combo : FTP Serveur 1 (FTP1_Hote) valeur par défaut “nuxidev.ovh”** 
+Valeur Affichée "" / Valeur retournée ""
+Valeur Affichée "Nuxidev.com" / Valeur retournée "ftp://ftp.cluster006.hosting.ovh.net"
+Valeur Affichée "Nuxidev.fr" / Valeur retournée "ftp://ftp.cluster011.hosting.ovh.net"
+Valeur Affichée "Nuxidev.ovh" / Valeur retournée "ftp://ftp.cluster030.hosting.ovh.net"
+
+
+**Zone de saisie, En saisie, Mot de passe FTP (FTP1_Mdp)** 
+la valeur d’initialisation par défaut lors de l’ajout d’une licence doit être une suite de 8 carcatères alphanumérique uniquement en respectant au minimum 1 minuscule, 1 majuscule et 1 chiffre. Tu dois le générer automatiquement lors de l’init pour créer une licence
+
+
+**Zone de saisie, En saisie, Téléchargement FTP (URL1)** 
+Cette zone est composée automatiquement depuis le combo SQL Serveur 1 (Data1) lors de la sélection du combo. il faut concaténer une url de la façon suivante https:// + combo SQL Serveur 1 (Data1) + /NuxiDev/ + combo SQL Serveur 1 (Data1) + /
