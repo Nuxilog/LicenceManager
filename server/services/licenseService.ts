@@ -8,6 +8,10 @@ class NuxiDevLicenseService {
    * Get licenses with optional filtering and sorting
    */
   async getLicenses(filters: LicenseFilters, sortConfig: SortConfig) {
+    // Log received filters for debugging
+    console.log('Received filters:', JSON.stringify(filters));
+    console.log('Received sort config:', JSON.stringify(sortConfig));
+    
     // Build raw SQL query
     let query = `
       SELECT * 
@@ -21,31 +25,49 @@ class NuxiDevLicenseService {
     if (filters.onlyNuxiDev) {
       query += ` AND "nom_soft" = $${queryParams.length + 1}`;
       queryParams.push('NuxiDev');
+      console.log('Added filter for NuxiDev only');
     }
     
     if (filters.idClient) {
       query += ` AND "id_client" = $${queryParams.length + 1}`;
       queryParams.push(filters.idClient);
+      console.log('Added filter for idClient:', filters.idClient);
     }
     
     if (filters.idSynchro) {
       query += ` AND "id_synchro" = $${queryParams.length + 1}`;
       queryParams.push(filters.idSynchro);
+      console.log('Added filter for idSynchro:', filters.idSynchro);
     }
     
     if (filters.serial) {
       query += ` AND "serial" LIKE $${queryParams.length + 1}`;
       queryParams.push(`%${filters.serial}%`);
+      console.log('Added filter for serial containing:', filters.serial);
     }
     
     if (filters.identifiantPC) {
       query += ` AND "identifiant_pc" LIKE $${queryParams.length + 1}`;
       queryParams.push(`%${filters.identifiantPC}%`);
+      console.log('Added filter for identifiantPC containing:', filters.identifiantPC);
     }
     
-    // Convert the key for sorting (PascalCase to snake_case)
-    const sortKey = sortConfig.key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    // Convert the key for sorting (PascalCase to snake_case properly)
+    let sortKey = sortConfig.key;
+    // Special case for ID which needs to become "id" not "_i_d"
+    if (sortKey === 'ID') {
+      sortKey = 'id';
+    } else {
+      // First letter lowercase, then replace other uppercase with _lowercase
+      sortKey = sortKey.charAt(0).toLowerCase() + 
+                sortKey.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+    }
+    console.log('Sorting by:', sortConfig.key, '-> converted to DB column:', sortKey);
     query += ` ORDER BY "${sortKey}" ${sortConfig.direction.toUpperCase()}`;
+    
+    // Log final query and parameters
+    console.log('Executing SQL query:', query);
+    console.log('With parameters:', queryParams);
     
     // Execute query
     const results = await executeRawQuery(query, queryParams);
@@ -104,8 +126,17 @@ class NuxiDevLicenseService {
     
     // Prepare columns and values for the INSERT query
     const columns = Object.keys(dataWithoutId).map(key => {
-      // Convert camelCase or PascalCase to snake_case for PostgreSQL
-      return `"${key.replace(/([A-Z])/g, '_$1').toLowerCase()}"`;
+      // Special case for ID which needs to become "id" not "_i_d"
+      if (key === 'ID') {
+        return '"id"';
+      }
+      
+      // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
+      const columnName = key.charAt(0).toLowerCase() + 
+                        key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+      
+      console.log('Converting property:', key, '-> to DB column:', columnName);
+      return `"${columnName}"`;
     });
     
     const placeholders = Array.from({ length: columns.length }, (_, i) => `$${i + 1}`).join(', ');
@@ -147,8 +178,17 @@ class NuxiDevLicenseService {
     
     // Prepare SET clause for the UPDATE query
     const updates = Object.keys(dataToUpdate).map((key, index) => {
-      // Convert camelCase or PascalCase to snake_case for PostgreSQL
-      const columnName = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+      // Special case for ID which needs to become "id" not "_i_d"
+      let columnName;
+      if (key === 'ID') {
+        columnName = 'id';
+      } else {
+        // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
+        columnName = key.charAt(0).toLowerCase() + 
+                    key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+      }
+      
+      console.log('UPDATE - Converting property:', key, '-> to DB column:', columnName);
       return `"${columnName}" = $${index + 1}`;
     });
     
