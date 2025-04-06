@@ -1,9 +1,41 @@
-import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import 'dotenv/config';
+
+// Determine which database to use based on environment variables
+const useMySQL = process.env.DB_HOST ? true : false;
+
+// Import the appropriate table creator and data types
+let sqlTable: any;
+let text: any;
+let serial: any;
+let integer: any;
+let boolean: any;
+let timestamp: any;
+let date: any;
+
+if (useMySQL) {
+  const mysqlImport = require("drizzle-orm/mysql-core");
+  sqlTable = mysqlImport.mysqlTable;
+  text = mysqlImport.text;
+  serial = mysqlImport.serial;
+  integer = mysqlImport.int;
+  boolean = mysqlImport.boolean;
+  timestamp = mysqlImport.timestamp;
+  date = mysqlImport.date;
+} else {
+  const pgImport = require("drizzle-orm/pg-core");
+  sqlTable = pgImport.pgTable;
+  text = pgImport.text;
+  serial = pgImport.serial;
+  integer = pgImport.integer;
+  boolean = pgImport.boolean;
+  timestamp = pgImport.timestamp;
+  date = pgImport.date;
+}
 
 // User model for authentication
-export const users = pgTable("users", {
+export const users = sqlTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
@@ -18,7 +50,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // NuxiDev License model - matches the MySQL database structure
-export const nuxiDevLicenses = pgTable("nuxi_dev_licenses", {
+export const nuxiDevLicenses = sqlTable("nuxi_dev_licenses", {
   ID: serial("id").primaryKey(),
   IDClient: text("id_client"),
   IdentifiantPC: text("identifiant_pc"),

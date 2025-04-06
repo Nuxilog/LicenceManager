@@ -1,5 +1,11 @@
-import { users, type User, type InsertUser } from "@shared/schema";
-import { db, executeRawQuery } from "./db";
+import { users, type User } from "@shared/schema";
+
+// Définir InsertUser directement pour éviter les erreurs de typage
+interface InsertUser {
+  username: string;
+  password: string;
+}
+import { executeRawQuery, getDb } from "./db";
 import { eq } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
@@ -44,6 +50,11 @@ export class DatabaseStorage implements IStorage {
       VALUES ($1, $2)
       RETURNING *
     `;
+    
+    // Vérifier que insertUser a les propriétés nécessaires
+    if (!insertUser.username || !insertUser.password) {
+      throw new Error('Username and password are required');
+    }
     
     const results = await executeRawQuery(query, [insertUser.username, insertUser.password]);
     const insertedUsers = results as unknown as any[];

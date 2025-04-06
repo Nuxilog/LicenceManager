@@ -1,4 +1,4 @@
-import { db, executeRawQuery } from '../db';
+import { executeRawQuery, getDb } from '../db';
 import { LicenseFilters, SortConfig } from '../../client/src/types/license';
 import { nuxiDevLicenses } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -73,7 +73,7 @@ class NuxiDevLicenseService {
     const results = await executeRawQuery(query, queryParams);
     
     // Convert snake_case to PascalCase for frontend compatibility
-    return results.map(row => {
+    return results.map((row: any) => {
       const convertedRow: any = {};
       for (const [key, value] of Object.entries(row)) {
         // Convert snake_case to PascalCase
