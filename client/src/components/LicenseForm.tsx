@@ -547,6 +547,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             onChange={handleChange}
           />
         </div>
+        {/* Ligne avec Data1 + FTP1 + URL1 */}
         <div>
           <Label htmlFor="data1" className="mb-1">Serveur DATA 1</Label>
           <Select 
@@ -599,6 +600,29 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
         </div>
         <div>
+          <Label htmlFor="url1" className="mb-1">Téléchargement FTP</Label>
+          <div className="relative">
+            <Input 
+              id="url1" 
+              name="URL1" 
+              value={formData.URL1 || ""} 
+              readOnly
+              className="bg-slate-100 pr-8"
+            />
+            <NuxiButton 
+              type="button"
+              variant="primary" 
+              size="icon" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={() => copyToClipboard(formData.URL1 || "", "Téléchargement FTP")}
+            >
+              <Copy className="h-4 w-4" />
+            </NuxiButton>
+          </div>
+        </div>
+        
+        {/* Ligne avec FTP1_Identifiant + FTP1_Mdp + Secu2Srv1 */}
+        <div>
           <Label htmlFor="ftp1_identifiant" className="mb-1">Utilisateur FTP</Label>
           <div className="relative">
             <Input 
@@ -635,27 +659,6 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               size="icon" 
               className="absolute right-0 top-0 h-full px-2"
               onClick={() => copyToClipboard(formData.FTP1_Mdp || "", "Mot de passe FTP")}
-            >
-              <Copy className="h-4 w-4" />
-            </NuxiButton>
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="url1" className="mb-1">Téléchargement FTP</Label>
-          <div className="relative">
-            <Input 
-              id="url1" 
-              name="URL1" 
-              value={formData.URL1 || ""} 
-              readOnly
-              className="bg-slate-100 pr-8"
-            />
-            <NuxiButton 
-              type="button"
-              variant="primary" 
-              size="icon" 
-              className="absolute right-0 top-0 h-full px-2"
-              onClick={() => copyToClipboard(formData.URL1 || "", "Téléchargement FTP")}
             >
               <Copy className="h-4 w-4" />
             </NuxiButton>

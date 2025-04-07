@@ -58,7 +58,7 @@ class FtpService {
   private generateHtaccessContent(basePath: string, idSynchro: string): string {
     return `AuthUserFile ${basePath}${idSynchro}/.htmdp
 AuthGroupFile /dev/null
-AuthName "Accès Restreint"
+AuthName "Acces Restreint"
 AuthType Basic
 require valid-user`;
   }
@@ -160,7 +160,8 @@ require valid-user`;
           // Nous sommes maintenant dans /NuxiDev/IDSynchro/
           
           // Télécharger les fichiers en mode binaire
-          await client.binary();  // S'assurer que nous sommes en mode binaire
+          // Définir le type de transfert en binaire
+          await client.send('TYPE I');
           await client.uploadFrom(htaccessPath, '.htaccess');
           await client.uploadFrom(htmdpPath, '.htmdp');
           
