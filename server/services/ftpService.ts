@@ -58,7 +58,7 @@ class FtpService {
   private generateHtaccessContent(basePath: string, idSynchro: string): string {
     return `AuthUserFile ${basePath}${idSynchro}/.htmdp
 AuthGroupFile /dev/null
-AuthName "Acces Restreint"
+AuthName "Accès Restreint"
 AuthType Basic
 require valid-user`;
   }
@@ -100,6 +100,10 @@ require valid-user`;
       
       fs.writeFileSync(htaccessPath, htaccessContent, { encoding: 'latin1' });
       fs.writeFileSync(htmdpPath, htmdpContent, { encoding: 'latin1' });
+      
+      // Vérifier le contenu du fichier .htaccess pour s'assurer que l'encodage est correct
+      const contentCheck = fs.readFileSync(htaccessPath, { encoding: 'latin1' });
+      log(`Contenu du fichier .htaccess (vérification encodage): ${contentCheck}`, 'ftpService');
       
       // Se connecter au serveur FTP et télécharger les fichiers
       const client = new ftp.Client();
