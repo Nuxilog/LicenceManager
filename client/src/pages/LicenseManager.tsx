@@ -6,6 +6,7 @@ import FilterPanel from "@/components/FilterPanel";
 import LicenseTable from "@/components/LicenseTable";
 import LicenseForm from "@/components/LicenseForm";
 import { Button } from "@/components/ui/button";
+import { NuxiButton } from "@/components/ui/nuxi-button";
 import { PlusIcon } from "lucide-react";
 import { generateSerial, generateFTPPassword } from "@/lib/licenseUtils";
 
@@ -159,36 +160,37 @@ export default function LicenseManager() {
       
       {/* Pagination */}
       <div className="flex justify-center items-center my-4 space-x-2">
-        <Button 
-          variant="outline" 
+        <NuxiButton 
+          variant="primary" 
           size="sm" 
           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
           disabled={currentPage === 1 || isLoading}
         >
           Précédent
-        </Button>
+        </NuxiButton>
         <span className="text-sm text-slate-600">
           Page {currentPage}
         </span>
-        <Button 
-          variant="outline" 
+        <NuxiButton 
+          variant="primary" 
           size="sm" 
           onClick={() => setCurrentPage(prev => prev + 1)}
           disabled={!licenses || licenses.length < pageSize || isLoading}
         >
           Suivant
-        </Button>
+        </NuxiButton>
       </div>
       
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-slate-900">Détails de la licence</h2>
-        <Button 
+        <NuxiButton 
           onClick={handleAddNewLicense}
+          variant="secondary"
           className="inline-flex items-center"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
           Ajouter une licence
-        </Button>
+        </NuxiButton>
       </div>
       
       <LicenseForm 

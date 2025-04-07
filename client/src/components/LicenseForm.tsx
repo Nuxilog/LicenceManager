@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { License } from "@/types/license";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { NuxiButton } from "@/components/ui/nuxi-button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -298,15 +299,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
                 readOnly
                 className="bg-slate-100 pr-8"
               />
-              <Button 
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="absolute right-0 top-0 h-full px-2"
                 onClick={() => copyToClipboard(formData.ID.toString() || "", "ID")}
               >
                 <Copy className="h-4 w-4" />
-              </Button>
+              </NuxiButton>
             </div>
           </div>
         </div>
@@ -324,15 +325,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
                 onBlur={handleIdSynchroBlur}
                 className="uppercase pr-8"
               />
-              <Button 
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="absolute right-0 top-0 h-full px-2"
                 onClick={() => copyToClipboard(formData.IDSynchro || "", "ID de Synchro")}
               >
                 <Copy className="h-4 w-4" />
-              </Button>
+              </NuxiButton>
             </div>
           </div>
           <div>
@@ -345,15 +346,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
                 onChange={handleChange}
                 className="pr-8"
               />
-              <Button 
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="absolute right-0 top-0 h-full px-2"
                 onClick={() => copyToClipboard(formData.Serial || "", "Serial")}
               >
                 <Copy className="h-4 w-4" />
-              </Button>
+              </NuxiButton>
             </div>
           </div>
           <div>
@@ -430,15 +431,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
                 onChange={handleChange}
                 className="pr-8"
               />
-              <Button 
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="absolute right-0 top-0 h-full px-2"
                 onClick={() => copyToClipboard(formData.MDP_Premium || "", "Mot de passe Premium")}
               >
                 <Copy className="h-4 w-4" />
-              </Button>
+              </NuxiButton>
             </div>
           </div>
         </div>
@@ -530,15 +531,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
                 ))}
               </SelectContent>
             </Select>
-            <Button 
+            <NuxiButton 
               type="button"
-              variant="ghost" 
-              size="sm" 
+              variant="primary" 
+              size="icon" 
               className="absolute right-0 top-0 h-full px-2"
               onClick={() => copyToClipboard(formData.FTP1_Hote || "", "FTP Serveur 1")}
             >
               <Copy className="h-4 w-4" />
-            </Button>
+            </NuxiButton>
           </div>
         </div>
         <div>
@@ -551,15 +552,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               onChange={handleChange}
               className="pr-8"
             />
-            <Button 
+            <NuxiButton 
               type="button"
-              variant="ghost" 
-              size="sm" 
+              variant="primary" 
+              size="icon" 
               className="absolute right-0 top-0 h-full px-2"
               onClick={() => copyToClipboard(formData.FTP1_Mdp || "", "Mot de passe FTP")}
             >
               <Copy className="h-4 w-4" />
-            </Button>
+            </NuxiButton>
           </div>
         </div>
         <div>
@@ -572,15 +573,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               onChange={handleChange}
               className="pr-8"
             />
-            <Button 
+            <NuxiButton 
               type="button"
-              variant="ghost" 
-              size="sm" 
+              variant="primary" 
+              size="icon" 
               className="absolute right-0 top-0 h-full px-2"
               onClick={() => copyToClipboard(formData.URL1 || "", "Téléchargement FTP")}
             >
               <Copy className="h-4 w-4" />
-            </Button>
+            </NuxiButton>
           </div>
         </div>
         <div>
@@ -594,42 +595,45 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               className="pr-16"
             />
             <div className="absolute right-0 top-0 h-full flex">
-              <Button 
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="px-2"
                 onClick={() => copyToClipboard(formData.Secu2Srv1 || "", "Sécu niveau 2")}
                 title="Copier la valeur"
               >
                 <Copy className="h-4 w-4" />
-              </Button>
-              <Button 
+              </NuxiButton>
+              <NuxiButton 
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="primary" 
+                size="icon" 
                 className="px-2"
                 onClick={generateSecu2Value}
                 title="Générer à partir du mot de passe FTP"
               >
                 <RefreshCw className="h-4 w-4" />
-              </Button>
+              </NuxiButton>
             </div>
           </div>
         </div>
       </div>
 
       <div className="mt-4 flex justify-end space-x-3">
-        <Button 
+        <NuxiButton 
           type="button"
-          variant="outline"
+          variant="primary"
           onClick={() => setFormData(license)}
         >
           Annuler
-        </Button>
-        <Button type="submit">
+        </NuxiButton>
+        <NuxiButton 
+          type="submit"
+          variant="secondary"
+        >
           Enregistrer
-        </Button>
+        </NuxiButton>
       </div>
     </form>
   );

@@ -39,7 +39,15 @@ export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig, 
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/licenses'] });
+      // Invalider toutes les requêtes qui commencent par /api/licenses (pour rafraîchir toutes les vues)
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey as unknown[];
+          return Array.isArray(queryKey) && 
+                 queryKey.length > 0 && 
+                 queryKey[0] === '/api/licenses';
+        }
+      });
     }
   });
 
@@ -50,7 +58,15 @@ export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig, 
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/licenses'] });
+      // Invalider toutes les requêtes qui commencent par /api/licenses (pour rafraîchir toutes les vues)
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey as unknown[];
+          return Array.isArray(queryKey) && 
+                 queryKey.length > 0 && 
+                 queryKey[0] === '/api/licenses';
+        }
+      });
     }
   });
 

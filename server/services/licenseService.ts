@@ -195,14 +195,25 @@ class NuxiDevLicenseService {
     
     // Prepare columns and values for the INSERT query
     const columns = Object.keys(dataWithoutId).map(key => {
-      // Special case for ID which needs to become "id" not "_i_d"
-      if (key === 'ID') {
-        return useMySQL ? 'id' : '"id"';
-      }
+      let columnName;
       
-      // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
-      const columnName = key.charAt(0).toLowerCase() + 
-                        key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+      // Pour MySQL, conserver le nom exact de la colonne, pas de conversion
+      if (useMySQL) {
+        if (key === 'ID') {
+          columnName = 'id'; // seul cas particulier
+        } else {
+          columnName = key; // garder le nom tel quel
+        }
+      } else {
+        // Pour PostgreSQL, convertir PascalCase en snake_case
+        if (key === 'ID') {
+          columnName = 'id';
+        } else {
+          // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
+          columnName = key.charAt(0).toLowerCase() + 
+                      key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+        }
+      }
       
       console.log('Converting property:', key, '-> to DB column:', columnName);
       
@@ -269,14 +280,24 @@ class NuxiDevLicenseService {
     
     // Prepare SET clause for the UPDATE query
     const updates = Object.keys(dataToUpdate).map((key, index) => {
-      // Special case for ID which needs to become "id" not "_i_d"
       let columnName;
-      if (key === 'ID') {
-        columnName = 'id';
+      
+      // Pour MySQL, conserver le nom exact de la colonne, pas de conversion
+      if (useMySQL) {
+        if (key === 'ID') {
+          columnName = 'id'; // seul cas particulier
+        } else {
+          columnName = key; // garder le nom tel quel
+        }
       } else {
-        // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
-        columnName = key.charAt(0).toLowerCase() + 
-                    key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+        // Pour PostgreSQL, convertir PascalCase en snake_case
+        if (key === 'ID') {
+          columnName = 'id';
+        } else {
+          // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
+          columnName = key.charAt(0).toLowerCase() + 
+                      key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
+        }
       }
       
       console.log('UPDATE - Converting property:', key, '-> to DB column:', columnName);
