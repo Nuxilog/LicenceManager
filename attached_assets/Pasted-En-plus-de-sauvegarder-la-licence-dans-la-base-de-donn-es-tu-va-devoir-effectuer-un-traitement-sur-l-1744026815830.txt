@@ -1,0 +1,58 @@
+En plus de sauvegarder la licence dans la base de données tu va devoir effectuer un traitement sur le serveur. 
+D’après des identifiants FTP lié au serveur utiliser, tu vas devoir composer un fichier .htaccess + .htmdp et l’uploader dans le dossier du client en question
+
+SI FTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster006.hosting.ovh.net" ALORS
+		UserFTP = "nuxidev-crm"
+		MDPFTP = "Nuxisoft351"
+SINON SI CFTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster011.hosting.ovh.net" ALORS
+		UserFTP =  "nuxidevfgj-crm"
+		MDPFTP =  "Nuxisoft351"
+SINON SI FTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster030.hosting.ovh.net" ALORS
+		UserFTP = "nuxidet-CRM"
+		MDPFTP =  "Nuxisoft351"		
+FIN
+
+
+Tu devras stocker ces valeurs UserFTP  et MDPFTP  dans le .env car elles correspondent à l’entreprise et non pas au client. Ce sont ces valeurs que nous allons utiliser pour configurer l’espace du client en fonction de son serveur attitré pour sa licence
+
+
+Génération du .htaccess suivant le serveur du client
+
+SI FTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster006.hosting.ovh.net" ALORS
+
+
+AuthUserFile /homez.635/nuxidev/www/NuxiDev/???/.htmdp
+AuthGroupFile /dev/null
+AuthName "Accès Restreint"
+AuthType Basic
+require valid-user
+		
+SINON SI CFTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster011.hosting.ovh.net" ALORS
+
+
+	AuthUserFile /home/nuxidevfgj/www/NuxiDev/???/.htmdp
+	AuthGroupFile /dev/null
+	AuthName "Accès Restreint"
+	AuthType Basic
+	require valid-user
+	
+SINON SI FTP Serveur 1 (licences2.FTP1_Hote) = "ftp://ftp.cluster030.hosting.ovh.net" ALORS
+
+
+	AuthUserFile /home/nuxidet/www/NuxiDev/???/.htmdp
+	AuthGroupFile /dev/null
+	AuthName "Accès Restreint"
+	AuthType Basic
+	require valid-user
+		
+FIN
+
+
+dans cette chaîne du .htaccess il faut remplacer les ??? par l’ID de Synchro du client
+Il faut se connecter au FTP via les identifiants ci-dessus en fonction du serveur du client et uploader ce htaccess dans son dossier /NuxiDev/ + IDSynchro + /  son dossier est accessible en conactenant le sous dossier NuxiDev et le sous dossier ID de Synchro . Exemple si son ID de Synchro est NUXIDEVD615 alors il faut uploader dans /NuxiDev/NUXIDEVD615/ le .htaccess généré
+
+
+Il faut également généré et uploader dans ce même dossier le .htmdp 
+La valeur à stocker dans le .htmdp est la valeur concatenation de licences2.IDSynchro + : + Secu2Srv1 par exemple pour l’ID de synchro = “NUXIDEVD615” et une sécu niveau 2 = “20pbCebeZA8tU” la valeur à stocker sera NUXIDEVD615:20pbCebeZA8tU
+
+Si le dossier FTP du client n’existe pas il faut le créer pour uploader les fichiers, sauf si la création est automatique à l’upload

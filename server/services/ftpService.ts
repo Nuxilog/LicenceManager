@@ -115,22 +115,51 @@ require valid-user`;
         
         log(`Connecté au serveur FTP: ${serverInfo.host}`, 'ftpService');
         
-        // S'assurer que le répertoire de destination existe
-        const targetDir = `${idSynchro}`;
+        // Se déplacer dans le répertoire NuxiDev si nécessaire (selon le chemin de base)
+        const rootDir = '/';
+        const nuxiDevDir = 'NuxiDev';
         
         try {
-          // ensureDir va créer le répertoire s'il n'existe pas
-          await client.ensureDir(targetDir);
+          // D'abord, s'assurer que nous sommes à la racine
+          await client.cd(rootDir);
+          
+          // Vérifier si le répertoire NuxiDev existe, sinon le créer
+          try {
+            await client.cd(nuxiDevDir);
+          } catch (error) {
+            try {
+              await client.send(`MKD ${nuxiDevDir}`);
+              await client.cd(nuxiDevDir);
+            } catch (dirError) {
+              log(`Impossible de créer le répertoire ${nuxiDevDir}: ${dirError instanceof Error ? dirError.message : String(dirError)}`, 'ftpService');
+              return false;
+            }
+          }
+          
+          // Maintenant, vérifier si le répertoire de l'ID Synchro existe, sinon le créer
+          try {
+            await client.cd(idSynchro);
+          } catch (error) {
+            try {
+              await client.send(`MKD ${idSynchro}`);
+              await client.cd(idSynchro);
+            } catch (dirError) {
+              log(`Impossible de créer le répertoire ${nuxiDevDir}/${idSynchro}: ${dirError instanceof Error ? dirError.message : String(dirError)}`, 'ftpService');
+              return false;
+            }
+          }
+          
+          // Nous sommes maintenant dans /NuxiDev/IDSynchro/
+          
+          // Télécharger les fichiers
+          await client.uploadFrom(htaccessPath, '.htaccess');
+          await client.uploadFrom(htmdpPath, '.htmdp');
+          
+          log(`Fichiers .htaccess et .htmdp téléchargés avec succès dans ${nuxiDevDir}/${idSynchro}/`, 'ftpService');
         } catch (error) {
-          log(`Le répertoire ${targetDir} n'existe pas, erreur: ${error instanceof Error ? error.message : String(error)}`, 'ftpService');
+          log(`Erreur lors de la navigation dans les répertoires: ${error instanceof Error ? error.message : String(error)}`, 'ftpService');
           return false;
         }
-        
-        // Télécharger les fichiers
-        await client.uploadFrom(htaccessPath, '.htaccess');
-        await client.uploadFrom(htmdpPath, '.htmdp');
-        
-        log(`Fichiers .htaccess et .htmdp téléchargés avec succès pour ${idSynchro}`, 'ftpService');
         return true;
       } catch (error) {
         log(`Erreur lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'ftpService');
