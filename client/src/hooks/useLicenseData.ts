@@ -54,6 +54,26 @@ export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig, 
     }
   });
 
+  // Check if an ID de Synchro already exists
+  const checkIdSynchroUniqueness = async (idSynchro: string, excludeLicenseId?: number) => {
+    if (!idSynchro) return { exists: false, licenses: [] };
+    
+    const queryParams = new URLSearchParams();
+    if (excludeLicenseId) queryParams.append('excludeLicenseId', excludeLicenseId.toString());
+    
+    const url = `/api/licenses/check-id-synchro/${idSynchro}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    
+    const res = await fetch(url, {
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to check ID Synchro uniqueness');
+    }
+    
+    return res.json();
+  };
+
   return {
     data,
     isLoading,
@@ -62,6 +82,7 @@ export function useLicenseData(filters: LicenseFilters, sortConfig: SortConfig, 
     createLicense: createLicenseMutation.mutateAsync,
     updateLicense: updateLicenseMutation.mutateAsync,
     isCreating: createLicenseMutation.isPending,
-    isUpdating: updateLicenseMutation.isPending
+    isUpdating: updateLicenseMutation.isPending,
+    checkIdSynchroUniqueness
   };
 }

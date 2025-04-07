@@ -335,6 +335,64 @@ class NuxiDevLicenseService {
     
     return convertedLicense;
   }
+
+  /**
+   * Vérifie si un ID de Synchro existe déjà dans la base de données
+   * Retourne les licences qui utilisent déjà cet ID (sauf celle avec l'ID en param)
+   */
+  async checkIfIDSynchroExists(idSynchro: string, excludeLicenseId?: number) {
+    if (!idSynchro) return [];
+    
+    console.log(`Vérification de l'unicité de l'ID de Synchro: ${idSynchro}, excluant l'ID: ${excludeLicenseId || 'aucun'}`);
+    
+    // Adapter la syntaxe SQL en fonction du type de base de données
+    let query;
+    let params: any[] = [idSynchro];
+    
+    if (useMySQL) {
+      query = `
+        SELECT * 
+        FROM ${this.tableName} 
+        WHERE IDSynchro = ?
+      `;
+      
+      // Si on exclut une licence spécifique (pour les mises à jour)
+      if (excludeLicenseId) {
+        query += ` AND id != ?`;
+        params.push(excludeLicenseId);
+      }
+    } else {
+      query = `
+        SELECT * 
+        FROM ${this.tableName} 
+        WHERE "IDSynchro" = $1
+      `;
+      
+      // Si on exclut une licence spécifique (pour les mises à jour)
+      if (excludeLicenseId) {
+        query += ` AND "id" != $2`;
+        params.push(excludeLicenseId);
+      }
+    }
+    
+    const results = await executeRawQuery(query, params);
+    const licenses = results as any[];
+    
+    console.log(`Résultat de la vérification: ${licenses.length} licence(s) avec le même IDSynchro trouvée(s)`);
+    
+    // Convert snake_case to PascalCase for frontend compatibility
+    return licenses.map((license) => {
+      const convertedLicense: any = {};
+      for (const [key, value] of Object.entries(license)) {
+        // Convert snake_case to PascalCase
+        const pascalKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        // Ensure first letter is capitalized
+        const finalKey = pascalKey.charAt(0).toUpperCase() + pascalKey.slice(1);
+        convertedLicense[finalKey] = value;
+      }
+      return convertedLicense;
+    });
+  }
 }
 
 export const nuxiDevLicenseService = new NuxiDevLicenseService();

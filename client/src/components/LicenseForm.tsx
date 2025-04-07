@@ -12,6 +12,8 @@ import {
   CONFIG_OPTIONS 
 } from "@/lib/constants";
 import { calculateAsciiSum } from "@/lib/licenseUtils";
+import { useToast } from "@/hooks/use-toast";
+import { useLicenseData } from "@/hooks/useLicenseData";
 
 interface LicenseFormProps {
   license: License | null;
@@ -22,6 +24,8 @@ interface LicenseFormProps {
 export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps) {
   const [formData, setFormData] = useState<License | null>(license);
   const [nbTerminaux, setNbTerminaux] = useState<string>("1");
+  const { toast } = useToast();
+  const { checkIdSynchroUniqueness } = useLicenseData({}, { key: "ID", direction: "asc" });
 
   useEffect(() => {
     if (license) {
@@ -129,7 +133,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   };
 
   // Quand on quitte le champ ID de Synchro, recalculer la valeur avec la somme ASCII
-  const handleIdSynchroBlur = () => {
+  const handleIdSynchroBlur = async () => {
     if (formData && formData.IDSynchro) {
       // Extraire seulement les lettres du début (pour s'assurer qu'on n'a pas déjà une somme)
       const lettersPart = formData.IDSynchro.match(/^([A-Z]+)/);
@@ -140,10 +144,40 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         const calculatedValue = `${letters}${asciiSum}`;
         
         // Mettre à jour le formData avec la valeur complète (lettres + somme)
-        setFormData({
-          ...formData,
-          IDSynchro: calculatedValue
+        setFormData(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            IDSynchro: calculatedValue
+          };
         });
+        
+        // Vérifier si l'ID de Synchro existe déjà dans la base de données
+        try {
+          // Exclure la licence actuelle de la vérification (uniquement pour les mises à jour)
+          const licenseId = formData.ID || undefined;
+          const result = await checkIdSynchroUniqueness(calculatedValue, licenseId);
+          
+          if (result.exists && result.licenses && result.licenses.length > 0) {
+            // Récupérer les numéros clients des licences qui utilisent déjà cet ID de Synchro
+            const clientIds = result.licenses.map((license: License) => license.IDClient).join(', ');
+            
+            // Afficher un toast avec les informations
+            toast({
+              variant: "destructive",
+              title: "Attention : ID de Synchro déjà utilisé",
+              description: `Cet ID de Synchro est déjà utilisé par les clients: ${clientIds}`,
+              duration: 6000
+            });
+          }
+        } catch (error) {
+          console.error("Erreur lors de la vérification de l'unicité de l'ID de Synchro:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de vérifier l'unicité de l'ID de Synchro"
+          });
+        }
       }
     }
   };

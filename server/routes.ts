@@ -44,6 +44,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint pour vérifier si un ID de Synchro existe déjà
+  app.get("/api/licenses/check-id-synchro/:idSynchro", async (req, res) => {
+    try {
+      const { idSynchro } = req.params;
+      const { excludeLicenseId } = req.query;
+      
+      const excludeId = excludeLicenseId ? parseInt(excludeLicenseId as string) : undefined;
+      
+      const existingLicenses = await nuxiDevLicenseService.checkIfIDSynchroExists(idSynchro, excludeId);
+      
+      res.json({
+        exists: existingLicenses.length > 0,
+        licenses: existingLicenses
+      });
+    } catch (error) {
+      console.error("Error checking ID Synchro uniqueness:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to check ID Synchro uniqueness" });
+    }
+  });
+
   app.get("/api/licenses/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
