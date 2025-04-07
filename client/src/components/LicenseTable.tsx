@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { CONFIG_OPTIONS } from "@/lib/constants";
 
 interface LicenseTableProps {
   licenses: License[];
@@ -52,6 +53,18 @@ export default function LicenseTable({
       return dateString;
     }
   };
+  
+  const getConfigurationLabel = (configValue: string | null): string => {
+    if (!configValue || configValue === "none") return "";
+    
+    // Chercher dans CONFIG_OPTIONS pour trouver le label correspondant
+    const configOption = CONFIG_OPTIONS.find(option => option.value === configValue);
+    if (configOption) {
+      return configOption.label;
+    }
+    
+    return "Configuration personnalisée";
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
@@ -77,6 +90,7 @@ export default function LicenseTable({
                   {renderSortIcon("IDSynchro")}
                 </div>
               </TableHead>
+              <TableHead className="whitespace-nowrap">Configuration</TableHead>
               <TableHead className="whitespace-nowrap">Version</TableHead>
               <TableHead className="whitespace-nowrap">Premium</TableHead>
               <TableHead className="whitespace-nowrap">MDP_Premium</TableHead>
@@ -127,6 +141,9 @@ export default function LicenseTable({
                 <TableCell className="whitespace-nowrap">{license.ID}</TableCell>
                 <TableCell className="whitespace-nowrap">{license.IDClient}</TableCell>
                 <TableCell className="whitespace-nowrap">{license.IDSynchro}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {getConfigurationLabel(license.Tablettes)}
+                </TableCell>
                 <TableCell className="whitespace-nowrap">{license.Version}</TableCell>
                 <TableCell className="whitespace-nowrap">
                   {license.Premium ? (
