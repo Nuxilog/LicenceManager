@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { NuxiButton } from "@/components/ui/nuxi-button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -78,9 +79,9 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
               />
               <Label htmlFor="nuxidev-only" className="ml-2">Uniquement NuxiDev</Label>
             </div>
-            <Button type="submit">
+            <NuxiButton type="submit" variant="secondary">
               Appliquer les filtres
-            </Button>
+            </NuxiButton>
           </div>
         </div>
       </form>
