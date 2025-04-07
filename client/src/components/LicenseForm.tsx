@@ -14,6 +14,7 @@ import {
 import { calculateAsciiSum } from "@/lib/licenseUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useLicenseData } from "@/hooks/useLicenseData";
+import { Copy } from "lucide-react";
 
 interface LicenseFormProps {
   license: License | null;
@@ -26,6 +27,34 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   const [nbTerminaux, setNbTerminaux] = useState<string>("1");
   const { toast } = useToast();
   const { checkIdSynchroUniqueness } = useLicenseData({}, { key: "ID", direction: "asc" });
+
+  // Fonction pour copier une valeur dans le presse-papier
+  const copyToClipboard = (value: string, label: string) => {
+    if (!value) {
+      toast({
+        title: "Aucune valeur à copier",
+        description: `Le champ ${label} est vide.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    navigator.clipboard.writeText(value)
+      .then(() => {
+        toast({
+          title: "Copié !",
+          description: `${label} a été copié dans le presse-papier.`,
+          duration: 2000
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Erreur",
+          description: "Impossible de copier dans le presse-papier.",
+          variant: "destructive"
+        });
+      });
+  };
 
   useEffect(() => {
     if (license) {
@@ -240,14 +269,25 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 mt-2">
           <div>
             <Label htmlFor="id_synchro" className="mb-1">ID de Synchro</Label>
-            <Input 
-              id="id_synchro"
-              name="IDSynchro"
-              value={formData.IDSynchro || ""} 
-              onChange={handleIdSynchroChange}
-              onBlur={handleIdSynchroBlur}
-              className="uppercase"
-            />
+            <div className="relative">
+              <Input 
+                id="id_synchro"
+                name="IDSynchro"
+                value={formData.IDSynchro || ""} 
+                onChange={handleIdSynchroChange}
+                onBlur={handleIdSynchroBlur}
+                className="uppercase pr-8"
+              />
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-0 top-0 h-full px-2"
+                onClick={() => copyToClipboard(formData.IDSynchro || "", "ID de Synchro")}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label htmlFor="serial" className="mb-1">Serial</Label>
@@ -402,41 +442,76 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         </div>
         <div>
           <Label htmlFor="ftp1_hote" className="mb-1">FTP Serveur 1</Label>
-          <Select 
-            name="FTP1_Hote"
-            value={formData.FTP1_Hote || "none"}
-            onValueChange={(value) => handleSelectChange("FTP1_Hote", value)}
-          >
-            <SelectTrigger id="ftp1_hote">
-              <SelectValue placeholder="-" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">-</SelectItem>
-              {FTP_SERVER_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select 
+              name="FTP1_Hote"
+              value={formData.FTP1_Hote || "none"}
+              onValueChange={(value) => handleSelectChange("FTP1_Hote", value)}
+            >
+              <SelectTrigger id="ftp1_hote" className="pr-8">
+                <SelectValue placeholder="-" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">-</SelectItem>
+                {FTP_SERVER_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              type="button"
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={() => copyToClipboard(formData.FTP1_Hote || "", "FTP Serveur 1")}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div>
           <Label htmlFor="ftp1_mdp" className="mb-1">Mot de passe FTP</Label>
-          <Input 
-            id="ftp1_mdp" 
-            name="FTP1_Mdp" 
-            value={formData.FTP1_Mdp || ""} 
-            onChange={handleChange}
-          />
+          <div className="relative">
+            <Input 
+              id="ftp1_mdp" 
+              name="FTP1_Mdp" 
+              value={formData.FTP1_Mdp || ""} 
+              onChange={handleChange}
+              className="pr-8"
+            />
+            <Button 
+              type="button"
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={() => copyToClipboard(formData.FTP1_Mdp || "", "Mot de passe FTP")}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div>
           <Label htmlFor="url1" className="mb-1">Téléchargement FTP</Label>
-          <Input 
-            id="url1" 
-            name="URL1" 
-            value={formData.URL1 || ""} 
-            onChange={handleChange}
-          />
+          <div className="relative">
+            <Input 
+              id="url1" 
+              name="URL1" 
+              value={formData.URL1 || ""} 
+              onChange={handleChange}
+              className="pr-8"
+            />
+            <Button 
+              type="button"
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={() => copyToClipboard(formData.URL1 || "", "Téléchargement FTP")}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
