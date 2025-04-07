@@ -2,6 +2,8 @@ import { executeRawQuery, getDb, describeTable } from '../db';
 import { LicenseFilters, SortConfig } from '../../client/src/types/license';
 import { nuxiDevLicenses } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
+import { ftpService } from './ftpService';
+import { log } from '../vite';
 
 // Détecter si on utilise MySQL
 const useMySQL = process.env.DB_HOST ? true : false;
@@ -248,6 +250,30 @@ class NuxiDevLicenseService {
         const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
         const selectResults = await executeRawQuery(selectQuery, [insertId]);
         const insertedRows = selectResults as any[];
+        
+        // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
+        const insertedLicense = insertedRows[0];
+        if (insertedLicense && insertedLicense.IDSynchro && insertedLicense.FTP1_Hote && insertedLicense.Secu2Srv1) {
+          try {
+            log(`Génération des fichiers de sécurité FTP pour la licence #${insertId} (ID de Synchro: ${insertedLicense.IDSynchro})`, 'licenseService');
+            const ftpResult = await ftpService.uploadSecurityFiles(
+              insertedLicense.FTP1_Hote, 
+              insertedLicense.IDSynchro, 
+              insertedLicense.Secu2Srv1
+            );
+            
+            if (ftpResult) {
+              log(`Fichiers de sécurité FTP générés et uploadés avec succès pour la licence #${insertId}`, 'licenseService');
+            } else {
+              log(`Erreur lors de la génération ou de l'upload des fichiers de sécurité FTP pour la licence #${insertId}`, 'licenseService');
+            }
+          } catch (error) {
+            log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+          }
+        } else {
+          log(`Informations FTP incomplètes pour la licence #${insertId}, aucun fichier de sécurité généré`, 'licenseService');
+        }
+        
         return insertedRows;
       }
     }
@@ -266,6 +292,26 @@ class NuxiDevLicenseService {
       // Ensure first letter is capitalized
       const finalKey = pascalKey.charAt(0).toUpperCase() + pascalKey.slice(1);
       convertedLicense[finalKey] = value;
+    }
+    
+    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp (pour PostgreSQL)
+    if (insertedLicense && insertedLicense.id_synchro && insertedLicense.ftp1_hote && insertedLicense.secu2_srv1) {
+      try {
+        log(`Génération des fichiers de sécurité FTP pour la licence #${insertedLicense.id} (ID de Synchro: ${insertedLicense.id_synchro})`, 'licenseService');
+        const ftpResult = await ftpService.uploadSecurityFiles(
+          insertedLicense.ftp1_hote, 
+          insertedLicense.id_synchro, 
+          insertedLicense.secu2_srv1
+        );
+        
+        if (ftpResult) {
+          log(`Fichiers de sécurité FTP générés et uploadés avec succès pour la licence #${insertedLicense.id}`, 'licenseService');
+        } else {
+          log(`Erreur lors de la génération ou de l'upload des fichiers de sécurité FTP pour la licence #${insertedLicense.id}`, 'licenseService');
+        }
+      } catch (error) {
+        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+      }
     }
     
     return convertedLicense;
@@ -335,6 +381,30 @@ class NuxiDevLicenseService {
       const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
       const selectResults = await executeRawQuery(selectQuery, [id]);
       const updatedRows = selectResults as any[];
+      
+      // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
+      const updatedLicense = updatedRows[0];
+      if (updatedLicense && updatedLicense.IDSynchro && updatedLicense.FTP1_Hote && updatedLicense.Secu2Srv1) {
+        try {
+          log(`Mise à jour des fichiers de sécurité FTP pour la licence #${id} (ID de Synchro: ${updatedLicense.IDSynchro})`, 'licenseService');
+          const ftpResult = await ftpService.uploadSecurityFiles(
+            updatedLicense.FTP1_Hote, 
+            updatedLicense.IDSynchro, 
+            updatedLicense.Secu2Srv1
+          );
+          
+          if (ftpResult) {
+            log(`Fichiers de sécurité FTP mis à jour avec succès pour la licence #${id}`, 'licenseService');
+          } else {
+            log(`Erreur lors de la mise à jour des fichiers de sécurité FTP pour la licence #${id}`, 'licenseService');
+          }
+        } catch (error) {
+          log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+        }
+      } else {
+        log(`Informations FTP incomplètes pour la licence #${id}, aucun fichier de sécurité mis à jour`, 'licenseService');
+      }
+      
       return updatedRows;
     }
     const updatedRows = results as any[];
@@ -352,6 +422,26 @@ class NuxiDevLicenseService {
       // Ensure first letter is capitalized
       const finalKey = pascalKey.charAt(0).toUpperCase() + pascalKey.slice(1);
       convertedLicense[finalKey] = value;
+    }
+    
+    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp (pour PostgreSQL)
+    if (updatedLicense && updatedLicense.id_synchro && updatedLicense.ftp1_hote && updatedLicense.secu2_srv1) {
+      try {
+        log(`Mise à jour des fichiers de sécurité FTP pour la licence #${updatedLicense.id} (ID de Synchro: ${updatedLicense.id_synchro})`, 'licenseService');
+        const ftpResult = await ftpService.uploadSecurityFiles(
+          updatedLicense.ftp1_hote, 
+          updatedLicense.id_synchro, 
+          updatedLicense.secu2_srv1
+        );
+        
+        if (ftpResult) {
+          log(`Fichiers de sécurité FTP mis à jour avec succès pour la licence #${updatedLicense.id}`, 'licenseService');
+        } else {
+          log(`Erreur lors de la mise à jour des fichiers de sécurité FTP pour la licence #${updatedLicense.id}`, 'licenseService');
+        }
+      } catch (error) {
+        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+      }
     }
     
     return convertedLicense;
