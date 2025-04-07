@@ -22,7 +22,6 @@ interface LicenseFormProps {
 export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps) {
   const [formData, setFormData] = useState<License | null>(license);
   const [nbTerminaux, setNbTerminaux] = useState<string>("1");
-  const [dataAscii, setDataAscii] = useState<string>("");
 
   useEffect(() => {
     if (license) {
@@ -34,18 +33,6 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         if (terminalsPart) {
           setNbTerminaux(terminalsPart);
         }
-      }
-      
-      // Extraire la partie lettres de l'ID de Synchro (sans la somme ASCII)
-      if (license.IDSynchro) {
-        const match = license.IDSynchro.match(/^([A-Z]+)\d*$/);
-        if (match) {
-          setDataAscii(match[1]);
-        } else {
-          setDataAscii(license.IDSynchro);
-        }
-      } else {
-        setDataAscii("");
       }
     }
   }, [license]);
@@ -128,21 +115,36 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     }
   };
 
-  const handleDataAsciiChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Gestion spéciale du champ ID de Synchro
+  const handleIdSynchroChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase();
-    setDataAscii(value);
-  };
-
-  // Gestion de la sortie du champ ID de Synchro - calcul de la somme ASCII
-  const handleIdSynchroBlur = () => {
-    if (dataAscii && formData) {
-      const asciiSum = calculateAsciiSum(dataAscii);
-      const calculatedValue = `${dataAscii}${asciiSum}`;
-      
+    
+    if (formData) {
+      // Mettre à jour formData avec les lettres saisies uniquement
       setFormData({
         ...formData,
-        IDSynchro: calculatedValue
+        IDSynchro: value
       });
+    }
+  };
+
+  // Quand on quitte le champ ID de Synchro, recalculer la valeur avec la somme ASCII
+  const handleIdSynchroBlur = () => {
+    if (formData && formData.IDSynchro) {
+      // Extraire seulement les lettres du début (pour s'assurer qu'on n'a pas déjà une somme)
+      const lettersPart = formData.IDSynchro.match(/^([A-Z]+)/);
+      if (lettersPart && lettersPart[1]) {
+        const letters = lettersPart[1];
+        // Calculer la somme ASCII et créer la valeur complète
+        const asciiSum = calculateAsciiSum(letters);
+        const calculatedValue = `${letters}${asciiSum}`;
+        
+        // Mettre à jour le formData avec la valeur complète (lettres + somme)
+        setFormData({
+          ...formData,
+          IDSynchro: calculatedValue
+        });
+      }
     }
   };
 
@@ -201,8 +203,8 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           <Input 
             id="id_synchro"
             name="IDSynchro"
-            value={dataAscii} 
-            onChange={handleDataAsciiChange}
+            value={formData.IDSynchro || ""} 
+            onChange={handleIdSynchroChange}
             onBlur={handleIdSynchroBlur}
             className="uppercase"
           />
