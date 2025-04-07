@@ -105,8 +105,6 @@ export default function LicenseTable({
               <TableHead className="whitespace-nowrap">Date_LimiteUtil</TableHead>
               <TableHead className="whitespace-nowrap">Options</TableHead>
               <TableHead className="whitespace-nowrap">IdentifiantPC</TableHead>
-              <TableHead className="whitespace-nowrap">NbRun</TableHead>
-              <TableHead className="whitespace-nowrap">Autorisations_Premium</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -114,7 +112,7 @@ export default function LicenseTable({
               <>
                 {[...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    {[...Array(14)].map((_, j) => (
+                    {[...Array(12)].map((_, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-5 w-full" />
                       </TableCell>
@@ -126,7 +124,7 @@ export default function LicenseTable({
             
             {!isLoading && licenses.length === 0 && (
               <TableRow>
-                <TableCell colSpan={14} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                   Aucune licence trouvée
                 </TableCell>
               </TableRow>
@@ -165,8 +163,6 @@ export default function LicenseTable({
                 <TableCell className="whitespace-nowrap">{formatDateOnly(license.Date_LimiteUtil as string)}</TableCell>
                 <TableCell className="whitespace-nowrap text-slate-500">{license.Options}</TableCell>
                 <TableCell className="whitespace-nowrap text-slate-500">{license.IdentifiantPC}</TableCell>
-                <TableCell className="whitespace-nowrap">{license.NbRun}</TableCell>
-                <TableCell className="whitespace-nowrap text-slate-500">{license.Autorisations_Premium}</TableCell>
               </TableRow>
             ))}
           </TableBody>
