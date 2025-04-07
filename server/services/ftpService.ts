@@ -94,12 +94,12 @@ require valid-user`;
       const htaccessContent = this.generateHtaccessContent(serverInfo.basePath, idSynchro);
       const htmdpContent = this.generateHtmdpContent(idSynchro, secu2Srv1);
       
-      // Écrire les fichiers temporaires
+      // Écrire les fichiers temporaires sans encodage UTF-8
       const htaccessPath = path.join(tempDir, '.htaccess');
       const htmdpPath = path.join(tempDir, '.htmdp');
       
-      fs.writeFileSync(htaccessPath, htaccessContent);
-      fs.writeFileSync(htmdpPath, htmdpContent);
+      fs.writeFileSync(htaccessPath, htaccessContent, { encoding: 'latin1' });
+      fs.writeFileSync(htmdpPath, htmdpContent, { encoding: 'latin1' });
       
       // Se connecter au serveur FTP et télécharger les fichiers
       const client = new ftp.Client();
@@ -112,6 +112,14 @@ require valid-user`;
           password: serverInfo.password,
           secure: false
         });
+        
+        // Désactiver explicitement l'encodage UTF-8
+        try {
+          await client.send("OPTS UTF8 OFF");
+        } catch (error) {
+          // Certains serveurs peuvent ne pas supporter cette commande, donc on ignore l'erreur
+          log("Impossible de désactiver UTF-8, mais on continue", 'ftpService');
+        }
         
         log(`Connecté au serveur FTP: ${serverInfo.host}`, 'ftpService');
         
@@ -151,7 +159,8 @@ require valid-user`;
           
           // Nous sommes maintenant dans /NuxiDev/IDSynchro/
           
-          // Télécharger les fichiers
+          // Télécharger les fichiers en mode binaire
+          await client.binary();  // S'assurer que nous sommes en mode binaire
           await client.uploadFrom(htaccessPath, '.htaccess');
           await client.uploadFrom(htmdpPath, '.htmdp');
           

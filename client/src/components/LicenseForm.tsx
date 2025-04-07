@@ -599,6 +599,27 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
         </div>
         <div>
+          <Label htmlFor="ftp1_identifiant" className="mb-1">Utilisateur FTP</Label>
+          <div className="relative">
+            <Input 
+              id="ftp1_identifiant" 
+              name="FTP1_Identifiant" 
+              value={formData.FTP1_Identifiant || ""} 
+              onChange={handleChange}
+              className="pr-8"
+            />
+            <NuxiButton 
+              type="button"
+              variant="primary" 
+              size="icon" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={() => copyToClipboard(formData.FTP1_Identifiant || "", "Utilisateur FTP")}
+            >
+              <Copy className="h-4 w-4" />
+            </NuxiButton>
+          </div>
+        </div>
+        <div>
           <Label htmlFor="ftp1_mdp" className="mb-1">Mot de passe FTP</Label>
           <div className="relative">
             <Input 
