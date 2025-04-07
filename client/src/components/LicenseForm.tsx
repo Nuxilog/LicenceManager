@@ -110,6 +110,13 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     });
   };
 
+  // Fonction pour générer l'URL de téléchargement FTP en fonction du serveur et de l'ID de Synchro
+  const updateDownloadUrl = (data1: string, idSynchro: string) => {
+    if (!data1) return "";
+    if (!idSynchro) return `https://${data1}/NuxiDev/`;
+    return `https://${data1}/NuxiDev/${idSynchro}/`;
+  };
+
   const handleSelectChange = (name: string, value: string) => {
     // Traiter "none" comme une valeur vide
     const finalValue = value === "none" ? "" : value;
@@ -118,11 +125,12 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
       if (!prev) return prev;
       
       // Special handling for Data1 field: update URL1
-      if (name === "Data1" && finalValue) {
+      if (name === "Data1") {
+        const idSynchro = prev.IDSynchro || "";
         return {
           ...prev,
           [name]: finalValue,
-          URL1: `https://${finalValue}/NuxiDev/${finalValue}/`
+          URL1: updateDownloadUrl(finalValue, idSynchro)
         };
       }
       
@@ -174,12 +182,21 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         const calculatedValue = `${letters}${asciiSum}`;
         
         // Mettre à jour le formData avec la valeur complète (lettres + somme)
+        // et mettre à jour l'URL1 si Data1 est défini
         setFormData(prev => {
           if (!prev) return prev;
-          return {
+          
+          const updatedObj = {
             ...prev,
             IDSynchro: calculatedValue
           };
+          
+          // Mettre à jour l'URL1 si Data1 est présent
+          if (prev.Data1) {
+            updatedObj.URL1 = updateDownloadUrl(prev.Data1, calculatedValue);
+          }
+          
+          return updatedObj;
         });
         
         // Vérifier si l'ID de Synchro existe déjà dans la base de données
@@ -609,8 +626,8 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               id="url1" 
               name="URL1" 
               value={formData.URL1 || ""} 
-              onChange={handleChange}
-              className="pr-8"
+              readOnly
+              className="bg-slate-100 pr-8"
             />
             <NuxiButton 
               type="button"
