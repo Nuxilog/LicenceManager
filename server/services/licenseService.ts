@@ -69,27 +69,27 @@ class NuxiDevLicenseService {
         query += ` AND IDClient = ${paramPlaceholder}`;
       }
       queryParams.push(filters.idClient);
-      console.log('Added filter for idClient:', filters.idClient);
+      console.log('Added filter for idClient (exacte):', filters.idClient);
     }
     
     if (filters.idSynchro) {
       if (!useMySQL) {
-        query += ` AND "IDSynchro" = $${queryParams.length + 1}`;
+        query += ` AND "IDSynchro" LIKE $${queryParams.length + 1}`;
       } else {
-        query += ` AND IDSynchro = ${paramPlaceholder}`;
+        query += ` AND IDSynchro LIKE ${paramPlaceholder}`;
       }
-      queryParams.push(filters.idSynchro);
-      console.log('Added filter for idSynchro:', filters.idSynchro);
+      queryParams.push(`%${filters.idSynchro}%`);
+      console.log('Added filter for idSynchro (contient):', filters.idSynchro);
     }
     
     if (filters.serial) {
       if (!useMySQL) {
-        query += ` AND "Serial" LIKE $${queryParams.length + 1}`;
+        query += ` AND "Serial" = $${queryParams.length + 1}`;
       } else {
-        query += ` AND Serial LIKE ${paramPlaceholder}`;
+        query += ` AND Serial = ${paramPlaceholder}`;
       }
-      queryParams.push(`%${filters.serial}%`);
-      console.log('Added filter for serial containing:', filters.serial);
+      queryParams.push(filters.serial);
+      console.log('Added filter for serial (exacte):', filters.serial);
     }
     
     if (filters.identifiantPC) {
@@ -99,7 +99,7 @@ class NuxiDevLicenseService {
         query += ` AND IdentifiantPC LIKE ${paramPlaceholder}`;
       }
       queryParams.push(`%${filters.identifiantPC}%`);
-      console.log('Added filter for identifiantPC containing:', filters.identifiantPC);
+      console.log('Added filter for identifiantPC (contient):', filters.identifiantPC);
     }
     
     // For MySQL, we use the original column names as they appear in the database

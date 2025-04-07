@@ -243,6 +243,25 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             className="uppercase"
           />
         </div>
+        <div className="flex flex-col justify-end">
+          <div className="flex items-center h-10">
+            <Checkbox 
+              id="suspendu" 
+              name="Suspendu" 
+              checked={!!formData.Suspendu}
+              onCheckedChange={(checked) => {
+                setFormData(prev => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    Suspendu: checked ? 1 : 0
+                  };
+                });
+              }}
+            />
+            <Label htmlFor="suspendu" className="ml-2">Suspendu</Label>
+          </div>
+        </div>
         <div>
           <Label htmlFor="serial" className="mb-1">Serial</Label>
           <Input 
@@ -349,25 +368,6 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             value={formData.Date_LimiteUtil ? new Date(formData.Date_LimiteUtil as string).toISOString().split('T')[0] : ""} 
             onChange={handleChange}
           />
-        </div>
-        <div className="flex flex-col justify-end">
-          <div className="flex items-center h-10">
-            <Checkbox 
-              id="suspendu" 
-              name="Suspendu" 
-              checked={!!formData.Suspendu}
-              onCheckedChange={(checked) => {
-                setFormData(prev => {
-                  if (!prev) return prev;
-                  return {
-                    ...prev,
-                    Suspendu: checked ? 1 : 0
-                  };
-                });
-              }}
-            />
-            <Label htmlFor="suspendu" className="ml-2">Suspendu</Label>
-          </div>
         </div>
         <div>
           <Label htmlFor="data1" className="mb-1">Serveur DATA 1</Label>
