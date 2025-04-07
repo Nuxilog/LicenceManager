@@ -190,11 +190,11 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
       {/* Information en-tête */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 pb-6 border-b border-slate-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 mb-3 pb-3 border-b border-slate-200">
         <div>
-          <Label htmlFor="id">ID</Label>
+          <Label htmlFor="id" className="mb-1">ID</Label>
           <Input 
             id="id" 
             name="ID" 
@@ -204,7 +204,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="date_der_utilisation">Dernière utilisation</Label>
+          <Label htmlFor="date_der_utilisation" className="mb-1">Dernière utilisation</Label>
           <Input 
             id="date_der_utilisation" 
             name="Date_DerUtilisation" 
@@ -214,7 +214,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="version">Version</Label>
+          <Label htmlFor="version" className="mb-1">Version</Label>
           <Input 
             id="version" 
             name="Version" 
@@ -224,7 +224,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="id_client">Numéro client</Label>
+          <Label htmlFor="id_client" className="mb-1">Numéro client</Label>
           <Input 
             id="id_client" 
             name="IDClient" 
@@ -233,7 +233,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="id_synchro">ID de Synchro</Label>
+          <Label htmlFor="id_synchro" className="mb-1">ID de Synchro</Label>
           <Input 
             id="id_synchro"
             name="IDSynchro"
@@ -244,7 +244,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="serial">Serial</Label>
+          <Label htmlFor="serial" className="mb-1">Serial</Label>
           <Input 
             id="serial" 
             name="Serial" 
@@ -252,8 +252,8 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             onChange={handleChange}
           />
         </div>
-        <div>
-          <div className="flex items-center h-full mt-6">
+        <div className="flex flex-col justify-end">
+          <div className="flex items-center h-10">
             <Checkbox 
               id="premium" 
               name="Premium" 
@@ -274,7 +274,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
         </div>
         <div>
-          <Label htmlFor="mdp_premium">Mot de passe Premium</Label>
+          <Label htmlFor="mdp_premium" className="mb-1">Mot de passe Premium</Label>
           <Input 
             id="mdp_premium" 
             name="MDP_Premium" 
@@ -283,7 +283,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div className="md:col-span-2">
-          <Label htmlFor="config">Choix de la configuration</Label>
+          <Label htmlFor="config" className="mb-1">Choix de la configuration</Label>
           <Select 
             name="Tablettes"
             value={formData.Tablettes || "none"}
@@ -305,9 +305,9 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
       </div>
 
       {/* Corps de la licence */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
         <div>
-          <Label htmlFor="nom_soft">Nom du Soft</Label>
+          <Label htmlFor="nom_soft" className="mb-1">Nom du Soft</Label>
           <Select 
             name="NomSoft"
             value={formData.NomSoft || "NuxiDev"}
@@ -326,7 +326,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </Select>
         </div>
         <div>
-          <Label htmlFor="nb_terminaux">Nombre de terminaux</Label>
+          <Label htmlFor="nb_terminaux" className="mb-1">Nombre de terminaux</Label>
           <Input 
             id="nb_terminaux" 
             type="number"
@@ -341,7 +341,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="date_limite_util">Date Limite d'utilisation</Label>
+          <Label htmlFor="date_limite_util" className="mb-1">Date Limite d'utilisation</Label>
           <Input 
             id="date_limite_util" 
             name="Date_LimiteUtil" 
@@ -350,8 +350,8 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             onChange={handleChange}
           />
         </div>
-        <div>
-          <div className="flex items-center h-full mt-6">
+        <div className="flex flex-col justify-end">
+          <div className="flex items-center h-10">
             <Checkbox 
               id="suspendu" 
               name="Suspendu" 
@@ -370,7 +370,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
         </div>
         <div>
-          <Label htmlFor="data1">SQL Serveur 1</Label>
+          <Label htmlFor="data1" className="mb-1">Serveur DATA 1</Label>
           <Select 
             name="Data1"
             value={formData.Data1 || "none"}
@@ -390,7 +390,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </Select>
         </div>
         <div>
-          <Label htmlFor="ftp1_hote">FTP Serveur 1</Label>
+          <Label htmlFor="ftp1_hote" className="mb-1">FTP Serveur 1</Label>
           <Select 
             name="FTP1_Hote"
             value={formData.FTP1_Hote || "none"}
@@ -410,7 +410,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </Select>
         </div>
         <div>
-          <Label htmlFor="ftp1_mdp">Mot de passe FTP</Label>
+          <Label htmlFor="ftp1_mdp" className="mb-1">Mot de passe FTP</Label>
           <Input 
             id="ftp1_mdp" 
             name="FTP1_Mdp" 
@@ -419,7 +419,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="url1">Téléchargement FTP</Label>
+          <Label htmlFor="url1" className="mb-1">Téléchargement FTP</Label>
           <Input 
             id="url1" 
             name="URL1" 
@@ -429,7 +429,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         </div>
       </div>
 
-      <div className="mt-8 flex justify-end space-x-3">
+      <div className="mt-4 flex justify-end space-x-3">
         <Button 
           type="button"
           variant="outline"
