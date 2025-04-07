@@ -192,134 +192,145 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
       {/* Information en-tête */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 mb-3 pb-3 border-b border-slate-200">
-        <div>
-          <Label htmlFor="id" className="mb-1">ID</Label>
-          <Input 
-            id="id" 
-            name="ID" 
-            value={formData.ID || ""} 
-            readOnly
-            className="bg-slate-100"
-          />
-        </div>
-        <div>
-          <Label htmlFor="date_der_utilisation" className="mb-1">Dernière utilisation</Label>
-          <Input 
-            id="date_der_utilisation" 
-            name="Date_DerUtilisation" 
-            value={formData.Date_DerUtilisation || ""} 
-            readOnly
-            className="bg-slate-100"
-          />
-        </div>
-        <div>
-          <Label htmlFor="version" className="mb-1">Version</Label>
-          <Input 
-            id="version" 
-            name="Version" 
-            value={formData.Version || ""} 
-            readOnly
-            className="bg-slate-100"
-          />
-        </div>
-        <div>
-          <Label htmlFor="id_client" className="mb-1">Numéro client</Label>
-          <Input 
-            id="id_client" 
-            name="IDClient" 
-            value={formData.IDClient || ""} 
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <Label htmlFor="id_synchro" className="mb-1">ID de Synchro</Label>
-          <Input 
-            id="id_synchro"
-            name="IDSynchro"
-            value={formData.IDSynchro || ""} 
-            onChange={handleIdSynchroChange}
-            onBlur={handleIdSynchroBlur}
-            className="uppercase"
-          />
-        </div>
-        <div className="flex flex-col justify-end">
-          <div className="flex items-center h-10">
-            <Checkbox 
-              id="suspendu" 
-              name="Suspendu" 
-              checked={!!formData.Suspendu}
-              onCheckedChange={(checked) => {
-                setFormData(prev => {
-                  if (!prev) return prev;
-                  return {
-                    ...prev,
-                    Suspendu: checked ? 1 : 0
-                  };
-                });
-              }}
+      <div className="flex flex-col gap-y-2 mb-3 pb-3 border-b border-slate-200">
+        {/* Première ligne: Numéro Client + Version + Dernière Utilisation + ID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+          <div>
+            <Label htmlFor="id_client" className="mb-1">Numéro client</Label>
+            <Input 
+              id="id_client" 
+              name="IDClient" 
+              value={formData.IDClient || ""} 
+              onChange={handleChange}
             />
-            <Label htmlFor="suspendu" className="ml-2">Suspendu</Label>
+          </div>
+          <div>
+            <Label htmlFor="version" className="mb-1">Version</Label>
+            <Input 
+              id="version" 
+              name="Version" 
+              value={formData.Version || ""} 
+              readOnly
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <Label htmlFor="date_der_utilisation" className="mb-1">Dernière utilisation</Label>
+            <Input 
+              id="date_der_utilisation" 
+              name="Date_DerUtilisation" 
+              value={formData.Date_DerUtilisation || ""} 
+              readOnly
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <Label htmlFor="id" className="mb-1">ID</Label>
+            <Input 
+              id="id" 
+              name="ID" 
+              value={formData.ID || ""} 
+              readOnly
+              className="bg-slate-100"
+            />
           </div>
         </div>
-        <div>
-          <Label htmlFor="serial" className="mb-1">Serial</Label>
-          <Input 
-            id="serial" 
-            name="Serial" 
-            value={formData.Serial || ""} 
-            onChange={handleChange}
-          />
-        </div>
-        <div className="flex flex-col justify-end">
-          <div className="flex items-center h-10">
-            <Checkbox 
-              id="premium" 
-              name="Premium" 
-              checked={!!formData.Premium}
-              onCheckedChange={(checked) => {
-                setFormData(prev => {
-                  if (!prev) return prev;
-                  const updatedValue = checked ? 1 : 0;
-                  return {
-                    ...prev,
-                    Premium: updatedValue,
-                    MDP_Premium: updatedValue ? prev.IDClient : ""
-                  };
-                });
-              }}
+        
+        {/* Deuxième ligne: ID de Synchro + Serial + Choix de la configuration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 mt-2">
+          <div>
+            <Label htmlFor="id_synchro" className="mb-1">ID de Synchro</Label>
+            <Input 
+              id="id_synchro"
+              name="IDSynchro"
+              value={formData.IDSynchro || ""} 
+              onChange={handleIdSynchroChange}
+              onBlur={handleIdSynchroBlur}
+              className="uppercase"
             />
-            <Label htmlFor="premium" className="ml-2">Licence Premium</Label>
+          </div>
+          <div>
+            <Label htmlFor="serial" className="mb-1">Serial</Label>
+            <Input 
+              id="serial" 
+              name="Serial" 
+              value={formData.Serial || ""} 
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label htmlFor="config" className="mb-1">Choix de la configuration</Label>
+            <Select 
+              name="Tablettes"
+              value={formData.Tablettes || "none"}
+              onValueChange={(value) => handleSelectChange("Tablettes", value)}
+            >
+              <SelectTrigger id="config">
+                <SelectValue placeholder="-" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">-</SelectItem>
+                {CONFIG_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <div>
-          <Label htmlFor="mdp_premium" className="mb-1">Mot de passe Premium</Label>
-          <Input 
-            id="mdp_premium" 
-            name="MDP_Premium" 
-            value={formData.MDP_Premium || ""} 
-            onChange={handleChange}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <Label htmlFor="config" className="mb-1">Choix de la configuration</Label>
-          <Select 
-            name="Tablettes"
-            value={formData.Tablettes || "none"}
-            onValueChange={(value) => handleSelectChange("Tablettes", value)}
-          >
-            <SelectTrigger id="config">
-              <SelectValue placeholder="-" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">-</SelectItem>
-              {CONFIG_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        
+        {/* Troisième ligne: Suspendu + Licence Premium + Mot de passe Premium */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 mt-2">
+          <div className="flex flex-col justify-end">
+            <div className="flex items-center h-10">
+              <Checkbox 
+                id="suspendu" 
+                name="Suspendu" 
+                checked={!!formData.Suspendu}
+                onCheckedChange={(checked) => {
+                  setFormData(prev => {
+                    if (!prev) return prev;
+                    return {
+                      ...prev,
+                      Suspendu: checked ? 1 : 0
+                    };
+                  });
+                }}
+              />
+              <Label htmlFor="suspendu" className="ml-2">Suspendu</Label>
+            </div>
+          </div>
+          <div className="flex flex-col justify-end">
+            <div className="flex items-center h-10">
+              <Checkbox 
+                id="premium" 
+                name="Premium" 
+                checked={!!formData.Premium}
+                onCheckedChange={(checked) => {
+                  setFormData(prev => {
+                    if (!prev) return prev;
+                    const updatedValue = checked ? 1 : 0;
+                    return {
+                      ...prev,
+                      Premium: updatedValue,
+                      MDP_Premium: updatedValue ? prev.IDClient : ""
+                    };
+                  });
+                }}
+              />
+              <Label htmlFor="premium" className="ml-2">Licence Premium</Label>
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="mdp_premium" className="mb-1">Mot de passe Premium</Label>
+            <Input 
+              id="mdp_premium" 
+              name="MDP_Premium" 
+              value={formData.MDP_Premium || ""} 
+              onChange={handleChange}
+            />
+          </div>
         </div>
       </div>
 
