@@ -36,14 +36,16 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
         }
       }
       
-      // Extract data ASCII without the sum
-      if (license.Data1) {
-        const match = license.Data1.match(/^([A-Z]+)\d*$/);
+      // Extraire la partie lettres de l'ID de Synchro (sans la somme ASCII)
+      if (license.IDSynchro) {
+        const match = license.IDSynchro.match(/^([A-Z]+)\d*$/);
         if (match) {
           setDataAscii(match[1]);
         } else {
-          setDataAscii(license.Data1);
+          setDataAscii(license.IDSynchro);
         }
+      } else {
+        setDataAscii("");
       }
     }
   }, [license]);
@@ -131,14 +133,15 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     setDataAscii(value);
   };
 
-  const handleDataAsciiBlur = () => {
+  // Gestion de la sortie du champ ID de Synchro - calcul de la somme ASCII
+  const handleIdSynchroBlur = () => {
     if (dataAscii && formData) {
       const asciiSum = calculateAsciiSum(dataAscii);
       const calculatedValue = `${dataAscii}${asciiSum}`;
       
       setFormData({
         ...formData,
-        Data1: calculatedValue
+        IDSynchro: calculatedValue
       });
     }
   };
@@ -194,12 +197,13 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           />
         </div>
         <div>
-          <Label htmlFor="data1_ascii">Combo SQL Serveur 1 (Data1 ASCII)</Label>
+          <Label htmlFor="id_synchro">ID de Synchro</Label>
           <Input 
-            id="data1_ascii"
-            value={dataAscii}
+            id="id_synchro"
+            name="IDSynchro"
+            value={dataAscii} 
             onChange={handleDataAsciiChange}
-            onBlur={handleDataAsciiBlur}
+            onBlur={handleIdSynchroBlur}
             className="uppercase"
           />
         </div>

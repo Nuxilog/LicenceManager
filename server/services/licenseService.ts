@@ -102,17 +102,16 @@ class NuxiDevLicenseService {
       console.log('Added filter for identifiantPC containing:', filters.identifiantPC);
     }
     
-    // Convert the key for sorting (PascalCase to snake_case properly)
+    // For MySQL, we use the original column names as they appear in the database
+    // In this database, we don't convert to snake_case
     let sortKey = sortConfig.key;
-    // Special case for ID which needs to become "id" not "_i_d"
-    if (sortKey === 'ID') {
+    
+    // Special case for ID - this is the only column that uses lowercase
+    if (sortKey === 'ID' && useMySQL) {
       sortKey = 'id';
-    } else {
-      // First letter lowercase, then replace other uppercase with _lowercase
-      sortKey = sortKey.charAt(0).toLowerCase() + 
-                sortKey.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
     }
-    console.log('Sorting by:', sortConfig.key, '-> converted to DB column:', sortKey);
+    
+    console.log('Sorting by:', sortConfig.key, '-> using DB column:', sortKey);
     
     // Ne pas entourer les noms de colonnes avec des guillemets pour MySQL
     if (useMySQL) {
