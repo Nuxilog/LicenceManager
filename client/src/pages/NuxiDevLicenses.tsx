@@ -86,7 +86,7 @@ export default function NuxiDevLicenses() {
       URL2: "",
       IDSynchro: "",
       NbRun: null,
-      Date_LimiteUtil: null,
+      Date_LimiteUtil: "2050-01-01",
       Terminaux: "",
       Tablettes: "",
       MrqBlancheNum: null,
