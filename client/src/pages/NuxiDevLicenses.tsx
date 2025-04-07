@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import LicenseNavigation from "@/components/LicenseNavigation";
 import { useLicenseData } from "@/hooks/useLicenseData";
-import { License } from "@/types/license";
 import FilterPanel from "@/components/FilterPanel";
 import LicenseTable from "@/components/LicenseTable";
 import LicenseForm from "@/components/LicenseForm";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { License } from "@/types/license";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { PlusIcon } from "lucide-react";
 import { generateSerial, generateFTPPassword } from "@/lib/licenseUtils";
 
-export default function LicenseManager() {
+export default function NuxiDevLicenses() {
   const { toast } = useToast();
   const [filters, setFilters] = useState({
     idClient: "",
     idSynchro: "",
     serial: "",
     identifiantPC: "",
-    onlyNuxiDev: false
+    onlyNuxiDev: true  // Toujours true pour NuxiDev
   });
   
   const [sortConfig, setSortConfig] = useState({
@@ -41,8 +41,8 @@ export default function LicenseManager() {
   } = useLicenseData(filters, sortConfig, currentPage, pageSize);
 
   const handleFilterChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
-    // Réinitialiser à la première page lors du changement de filtres
+    // Toujours garder onlyNuxiDev à true pour cette page
+    setFilters({...newFilters, onlyNuxiDev: true});
     setCurrentPage(1);
   };
 
@@ -51,7 +51,6 @@ export default function LicenseManager() {
       key,
       direction: prev.key === key && prev.direction === "desc" ? "asc" : "desc"
     }));
-    // Réinitialiser à la première page lors du changement de tri
     setCurrentPage(1);
   };
 
@@ -68,7 +67,7 @@ export default function LicenseManager() {
       Options: "",
       Serial: generateSerial(),
       Suspendu: 0,
-      NomSoft: "NuxiDev",
+      NomSoft: "NuxiDev", // Toujours NuxiDev pour cette page
       NomPoste: "",
       NomSession: "",
       Date_DerUtilisation: null,
@@ -110,17 +109,20 @@ export default function LicenseManager() {
 
   const handleSaveLicense = async (license: License) => {
     try {
+      // Forcer NomSoft à NuxiDev
+      const licenseToSave = {...license, NomSoft: "NuxiDev"};
+      
       if (isCreatingNew) {
-        await createLicense(license);
+        await createLicense(licenseToSave);
         toast({
           title: "Succès",
-          description: "Licence créée avec succès",
+          description: "Licence NuxiDev créée avec succès",
         });
       } else {
-        await updateLicense(license);
+        await updateLicense(licenseToSave);
         toast({
           title: "Succès",
-          description: "Licence mise à jour avec succès",
+          description: "Licence NuxiDev mise à jour avec succès",
         });
       }
       
@@ -138,15 +140,27 @@ export default function LicenseManager() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-red-500 mb-2">Erreur de chargement des données</h2>
-        <p>{(error as Error).message}</p>
+      <div className="container mx-auto px-4 py-6">
+        <LicenseNavigation currentType="nuxidev" />
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-red-500 mb-2">Erreur de chargement des données</h2>
+          <p>{(error as Error).message}</p>
+        </div>
       </div>
     );
   }
-
+  
   return (
-    <>
+    <div className="container mx-auto px-4 py-6">
+      <LicenseNavigation currentType="nuxidev" />
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+        <h2 className="text-lg font-semibold text-blue-800 mb-2">Licences NuxiDev</h2>
+        <p className="text-sm text-blue-700">
+          Cette section permet de gérer les licences NuxiDev. Le filtre "Uniquement NuxiDev" est automatiquement activé 
+          pour ne montrer que les licences NuxiDev.
+        </p>
+      </div>
+      
       <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
       
       <LicenseTable 
@@ -189,7 +203,7 @@ export default function LicenseManager() {
           className="inline-flex items-center"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-          Ajouter une licence
+          Ajouter une licence NuxiDev
         </NuxiButton>
       </div>
       
@@ -198,6 +212,6 @@ export default function LicenseManager() {
         onSave={handleSaveLicense} 
         isNew={isCreatingNew}
       />
-    </>
+    </div>
   );
 }
