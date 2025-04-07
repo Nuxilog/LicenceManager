@@ -211,7 +211,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     }
   };
 
-  // Fonction pour générer la valeur de sécurité niveau 2 en cryptant "Mot de passe FTP + &code= + le jour du mois"
+  // Fonction pour générer la valeur de sécurité niveau 2 en cryptant le mot de passe FTP
   const generateSecu2Value = () => {
     if (!formData || !formData.FTP1_Mdp) {
       toast({
@@ -222,14 +222,8 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
       return;
     }
     
-    // Obtenir le jour du mois actuel (1-31)
-    const currentDay = new Date().getDate();
-    
-    // Construire la chaîne à crypter : Mot de passe FTP + "&code=" + jour du mois
-    const stringToCrypt = `${formData.FTP1_Mdp}&code=${currentDay}`;
-    
-    // Crypter la chaîne
-    const cryptedValue = cryptPassword(stringToCrypt);
+    // Crypter le mot de passe FTP uniquement
+    const cryptedValue = cryptPassword(formData.FTP1_Mdp);
     
     setFormData(prev => {
       if (!prev) return prev;
@@ -241,7 +235,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     
     toast({
       title: "Valeur générée",
-      description: `La valeur Sécu niveau 2 a été générée avec succès pour le jour ${currentDay}.`,
+      description: "La valeur Sécu niveau 2 a été générée avec succès.",
       duration: 2000
     });
   };
