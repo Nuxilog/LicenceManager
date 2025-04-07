@@ -241,10 +241,49 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     });
   };
 
+  // Fonction pour formater les dates au format MySQL (YYYY-MM-DD HH:MM:SS)
+  const formatDateForMySQL = (dateStr: string | null): string | null => {
+    if (!dateStr) return null;
+    
+    try {
+      const date = new Date(dateStr);
+      
+      // Format YYYY-MM-DD HH:MM:SS
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    } catch (error) {
+      console.error("Erreur de conversion de date:", error);
+      return null;
+    }
+  };
+  
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (formData) {
-      onSave(formData);
+      // Créer une copie des données du formulaire pour éviter de modifier l'état
+      const formDataToSubmit = { ...formData };
+      
+      // Formater les dates au format MySQL si elles existent
+      if (formDataToSubmit.Date_DerUtilisation) {
+        formDataToSubmit.Date_DerUtilisation = formatDateForMySQL(formDataToSubmit.Date_DerUtilisation);
+      }
+      
+      if (formDataToSubmit.Date_LimiteUtil) {
+        formDataToSubmit.Date_LimiteUtil = formatDateForMySQL(formDataToSubmit.Date_LimiteUtil);
+      }
+      
+      if (formDataToSubmit.DateClient) {
+        formDataToSubmit.DateClient = formatDateForMySQL(formDataToSubmit.DateClient);
+      }
+      
+      // Envoyer les données avec les dates formatées
+      onSave(formDataToSubmit);
     }
   };
 
