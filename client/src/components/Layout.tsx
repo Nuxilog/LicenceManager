@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import logoPath from "../assets/logo.png";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,9 +11,9 @@ export default function Layout({ children }: LayoutProps) {
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <header className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Gestion des Licences</h1>
-              <p className="text-slate-500">Outil de gestion des licences utilisateurs - NuxiDev</p>
+            <div className="flex items-center gap-3">
+              <img src={logoPath} alt="Logo Nuxilog" className="h-10 w-10" />
+              <h1 className="text-2xl font-semibold text-slate-900">Gestion des licences Nuxilog</h1>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-500">Base de données active:</span>
