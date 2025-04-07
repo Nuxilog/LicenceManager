@@ -11,10 +11,10 @@ import {
   FTP_SERVER_OPTIONS,
   CONFIG_OPTIONS 
 } from "@/lib/constants";
-import { calculateAsciiSum } from "@/lib/licenseUtils";
+import { calculateAsciiSum, cryptPassword } from "@/lib/licenseUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useLicenseData } from "@/hooks/useLicenseData";
-import { Copy } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
 
 interface LicenseFormProps {
   license: License | null;
@@ -211,6 +211,34 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
     }
   };
 
+  // Fonction pour générer la valeur de sécurité niveau 2 en cryptant le mot de passe FTP
+  const generateSecu2Value = () => {
+    if (!formData || !formData.FTP1_Mdp) {
+      toast({
+        title: "Impossible de générer la valeur",
+        description: "Le mot de passe FTP est vide.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const cryptedValue = cryptPassword(formData.FTP1_Mdp);
+    
+    setFormData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        Secu2Srv1: cryptedValue
+      };
+    });
+    
+    toast({
+      title: "Valeur générée",
+      description: "La valeur Sécu niveau 2 a été générée avec succès.",
+      duration: 2000
+    });
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (formData) {
@@ -248,7 +276,13 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
             <Input 
               id="date_der_utilisation" 
               name="Date_DerUtilisation" 
-              value={formData.Date_DerUtilisation || ""} 
+              value={formData.Date_DerUtilisation ? new Date(formData.Date_DerUtilisation).toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : ""} 
               readOnly
               className="bg-slate-100"
             />
@@ -510,6 +544,28 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               onClick={() => copyToClipboard(formData.URL1 || "", "Téléchargement FTP")}
             >
               <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="secu2_srv1" className="mb-1">Sécu niveau 2</Label>
+          <div className="relative">
+            <Input 
+              id="secu2_srv1" 
+              name="Secu2Srv1" 
+              value={formData.Secu2Srv1 || ""} 
+              onChange={handleChange}
+              className="pr-8"
+            />
+            <Button 
+              type="button"
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-0 top-0 h-full px-2"
+              onClick={generateSecu2Value}
+              title="Générer à partir du mot de passe FTP"
+            >
+              <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
         </div>
