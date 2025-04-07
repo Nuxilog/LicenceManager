@@ -290,13 +290,24 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
           <div>
             <Label htmlFor="id" className="mb-1">ID</Label>
-            <Input 
-              id="id" 
-              name="ID" 
-              value={formData.ID || ""} 
-              readOnly
-              className="bg-slate-100"
-            />
+            <div className="relative">
+              <Input 
+                id="id" 
+                name="ID" 
+                value={formData.ID || ""} 
+                readOnly
+                className="bg-slate-100 pr-8"
+              />
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-0 top-0 h-full px-2"
+                onClick={() => copyToClipboard(formData.ID.toString() || "", "ID")}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -326,12 +337,24 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
           <div>
             <Label htmlFor="serial" className="mb-1">Serial</Label>
-            <Input 
-              id="serial" 
-              name="Serial" 
-              value={formData.Serial || ""} 
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <Input 
+                id="serial" 
+                name="Serial" 
+                value={formData.Serial || ""} 
+                onChange={handleChange}
+                className="pr-8"
+              />
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-0 top-0 h-full px-2"
+                onClick={() => copyToClipboard(formData.Serial || "", "Serial")}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label htmlFor="config" className="mb-1">Choix de la configuration</Label>
@@ -399,12 +422,24 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
           </div>
           <div>
             <Label htmlFor="mdp_premium" className="mb-1">Mot de passe Premium</Label>
-            <Input 
-              id="mdp_premium" 
-              name="MDP_Premium" 
-              value={formData.MDP_Premium || ""} 
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <Input 
+                id="mdp_premium" 
+                name="MDP_Premium" 
+                value={formData.MDP_Premium || ""} 
+                onChange={handleChange}
+                className="pr-8"
+              />
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-0 top-0 h-full px-2"
+                onClick={() => copyToClipboard(formData.MDP_Premium || "", "Mot de passe Premium")}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -556,18 +591,30 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
               name="Secu2Srv1" 
               value={formData.Secu2Srv1 || ""} 
               onChange={handleChange}
-              className="pr-8"
+              className="pr-16"
             />
-            <Button 
-              type="button"
-              variant="ghost" 
-              size="sm" 
-              className="absolute right-0 top-0 h-full px-2"
-              onClick={generateSecu2Value}
-              title="Générer à partir du mot de passe FTP"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="absolute right-0 top-0 h-full flex">
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="px-2"
+                onClick={() => copyToClipboard(formData.Secu2Srv1 || "", "Sécu niveau 2")}
+                title="Copier la valeur"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="px-2"
+                onClick={generateSecu2Value}
+                title="Générer à partir du mot de passe FTP"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
