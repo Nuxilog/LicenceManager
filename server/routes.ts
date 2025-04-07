@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 // Pas besoin d'importer db car il n'est pas utilisé
 import { nuxiDevLicenseService } from "./services/licenseService";
+import { cryptService } from "./services/cryptService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Licenses API routes
@@ -41,6 +42,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching licenses:", error);
       res.status(500).json({ message: (error as Error).message || "Failed to fetch licenses" });
+    }
+  });
+
+  // Endpoint pour crypter un mot de passe avec l'algorithme crypt() de PHP
+  app.post("/api/crypt", (req, res) => {
+    try {
+      const { password } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+      
+      const cryptedPassword = cryptService.crypt(password);
+      
+      res.json({ password, crypted: cryptedPassword });
+    } catch (error) {
+      console.error("Error crypting password:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to crypt password" });
     }
   });
 

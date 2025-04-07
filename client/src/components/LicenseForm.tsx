@@ -212,7 +212,7 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
   };
 
   // Fonction pour générer la valeur de sécurité niveau 2 en cryptant le mot de passe FTP
-  const generateSecu2Value = () => {
+  const generateSecu2Value = async () => {
     if (!formData || !formData.FTP1_Mdp) {
       toast({
         title: "Impossible de générer la valeur",
@@ -222,21 +222,56 @@ export default function LicenseForm({ license, onSave, isNew }: LicenseFormProps
       return;
     }
     
-    const cryptedValue = cryptPassword(formData.FTP1_Mdp);
-    
-    setFormData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        Secu2Srv1: cryptedValue
-      };
-    });
-    
-    toast({
-      title: "Valeur générée",
-      description: "La valeur Sécu niveau 2 a été générée avec succès.",
-      duration: 2000
-    });
+    try {
+      // Appel à l'API pour crypter le mot de passe
+      const response = await fetch('/api/crypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: formData.FTP1_Mdp }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du cryptage du mot de passe');
+      }
+      
+      const data = await response.json();
+      const cryptedValue = data.crypted;
+      
+      setFormData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          Secu2Srv1: cryptedValue
+        };
+      });
+      
+      toast({
+        title: "Valeur générée",
+        description: "La valeur Sécu niveau 2 a été générée avec succès.",
+        duration: 2000
+      });
+    } catch (error) {
+      console.error('Erreur lors du cryptage du mot de passe:', error);
+      
+      // Fallback à la méthode côté client si l'API échoue
+      const cryptedValue = cryptPassword(formData.FTP1_Mdp);
+      
+      setFormData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          Secu2Srv1: cryptedValue
+        };
+      });
+      
+      toast({
+        title: "Valeur générée (mode dégradé)",
+        description: "La valeur a été générée localement. Pour une meilleure compatibilité, vérifiez la connexion au serveur.",
+        duration: 3000
+      });
+    }
   };
 
   const handleSubmit = (e: FormEvent) => {
