@@ -101,9 +101,11 @@ class NuxiDevLicenseService {
     
     // Execute query
     const results = await executeRawQuery(query, queryParams);
+    // Cast des résultats en tableau pour utiliser map
+    const licenses = results as any[];
     
     // Convert snake_case to PascalCase for frontend compatibility
-    return results.map((row: any) => {
+    return licenses.map((row: any) => {
       const convertedRow: any = {};
       for (const [key, value] of Object.entries(row)) {
         // Convert snake_case to PascalCase
@@ -159,92 +161,69 @@ class NuxiDevLicenseService {
     const columns = Object.keys(dataWithoutId).map(key => {
       let columnName;
       
-      // Pour MySQL, conserver le nom exact de la colonne, pas de conversion
-      if (useMySQL) {
-        if (key === 'ID') {
-          columnName = 'id'; // seul cas particulier
-        } else {
-          columnName = key; // garder le nom tel quel
-        }
+      // Conserver le nom exact de la colonne, juste cas spécial pour ID
+      if (key === 'ID') {
+        columnName = 'id'; // seul cas particulier
       } else {
-        // Pour PostgreSQL, convertir PascalCase en snake_case
-        if (key === 'ID') {
-          columnName = 'id';
-        } else {
-          // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
-          columnName = key.charAt(0).toLowerCase() + 
-                      key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
-        }
+        columnName = key; // garder le nom tel quel
       }
       
       console.log('Converting property:', key, '-> to DB column:', columnName);
       
-      // Enlever les guillemets pour MySQL
-      return useMySQL ? `${columnName}` : `"${columnName}"`;
+      return `${columnName}`;
     });
     
     const values = Object.values(dataWithoutId);
     
-    let placeholders;
-    if (useMySQL) {
-      // Utiliser ? pour les paramètres en MySQL
-      placeholders = Array(columns.length).fill('?').join(', ');
-    } else {
-      // Utiliser $n pour les paramètres en PostgreSQL
-      placeholders = Array.from({ length: columns.length }, (_, i) => `$${i + 1}`).join(', ');
-    }
+    // Utiliser ? pour les paramètres en MySQL
+    const placeholders = Array(columns.length).fill('?').join(', ');
     
     const query = `
       INSERT INTO ${this.tableName} (${columns.join(', ')})
       VALUES (${placeholders})
-      ${useMySQL ? '' : 'RETURNING *'}
     `;
     
     const results = await executeRawQuery(query, values);
     
     // Pour MySQL, faire une requête supplémentaire pour obtenir la ligne insérée
-    if (useMySQL) {
-      // On suppose que la dernière insertion a été réussie et que nous pouvons obtenir l'ID généré
-      const insertId = (results as any).insertId;
-      if (insertId) {
-        const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
-        const selectResults = await executeRawQuery(selectQuery, [insertId]);
-        const insertedRows = selectResults as any[];
-        
-        // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
-        const insertedLicense = insertedRows[0];
-        if (insertedLicense && insertedLicense.IDSynchro && insertedLicense.FTP1_Hote && insertedLicense.Secu2Srv1) {
-          try {
-            log(`Génération des fichiers de sécurité FTP pour la licence #${insertId} (ID de Synchro: ${insertedLicense.IDSynchro})`, 'licenseService');
-            const ftpResult = await ftpService.uploadSecurityFiles(
-              insertedLicense.FTP1_Hote, 
-              insertedLicense.IDSynchro, 
-              insertedLicense.Secu2Srv1
-            );
-            
-            if (ftpResult) {
-              log(`Fichiers de sécurité FTP générés et uploadés avec succès pour la licence #${insertId}`, 'licenseService');
-            } else {
-              log(`Erreur lors de la génération ou de l'upload des fichiers de sécurité FTP pour la licence #${insertId}`, 'licenseService');
-            }
-          } catch (error) {
-            log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
-          }
-        } else {
-          log(`Informations FTP incomplètes pour la licence #${insertId}, aucun fichier de sécurité généré`, 'licenseService');
-        }
-        
-        return insertedRows;
-      }
+    // On suppose que la dernière insertion a été réussie et que nous pouvons obtenir l'ID généré
+    const insertId = (results as any).insertId;
+    if (!insertId) {
+      throw new Error('Failed to create license: no insertId returned');
     }
-    const insertedRows = results as any[];
+    
+    const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
+    const selectResults = await executeRawQuery(selectQuery, [insertId]);
+    const insertedRows = selectResults as any[];
     
     if (insertedRows.length === 0) {
-      throw new Error('Failed to create license');
+      throw new Error('Failed to retrieve created license');
+    }
+    
+    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
+    const insertedLicense = insertedRows[0];
+    if (insertedLicense && insertedLicense.IDSynchro && insertedLicense.FTP1_Hote && insertedLicense.Secu2Srv1) {
+      try {
+        log(`Génération des fichiers de sécurité FTP pour la licence #${insertId} (ID de Synchro: ${insertedLicense.IDSynchro})`, 'licenseService');
+        const ftpResult = await ftpService.uploadSecurityFiles(
+          insertedLicense.FTP1_Hote, 
+          insertedLicense.IDSynchro, 
+          insertedLicense.Secu2Srv1
+        );
+        
+        if (ftpResult) {
+          log(`Fichiers de sécurité FTP générés et uploadés avec succès pour la licence #${insertId}`, 'licenseService');
+        } else {
+          log(`Erreur lors de la génération ou de l'upload des fichiers de sécurité FTP pour la licence #${insertId}`, 'licenseService');
+        }
+      } catch (error) {
+        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+      }
+    } else {
+      log(`Informations FTP incomplètes pour la licence #${insertId}, aucun fichier de sécurité généré`, 'licenseService');
     }
     
     // Convert snake_case to PascalCase for frontend compatibility
-    const insertedLicense = insertedRows[0];
     const convertedLicense: any = {};
     for (const [key, value] of Object.entries(insertedLicense)) {
       // Convert snake_case to PascalCase
@@ -252,26 +231,6 @@ class NuxiDevLicenseService {
       // Ensure first letter is capitalized
       const finalKey = pascalKey.charAt(0).toUpperCase() + pascalKey.slice(1);
       convertedLicense[finalKey] = value;
-    }
-    
-    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp (pour PostgreSQL)
-    if (insertedLicense && insertedLicense.id_synchro && insertedLicense.ftp1_hote && insertedLicense.secu2_srv1) {
-      try {
-        log(`Génération des fichiers de sécurité FTP pour la licence #${insertedLicense.id} (ID de Synchro: ${insertedLicense.id_synchro})`, 'licenseService');
-        const ftpResult = await ftpService.uploadSecurityFiles(
-          insertedLicense.ftp1_hote, 
-          insertedLicense.id_synchro, 
-          insertedLicense.secu2_srv1
-        );
-        
-        if (ftpResult) {
-          log(`Fichiers de sécurité FTP générés et uploadés avec succès pour la licence #${insertedLicense.id}`, 'licenseService');
-        } else {
-          log(`Erreur lors de la génération ou de l'upload des fichiers de sécurité FTP pour la licence #${insertedLicense.id}`, 'licenseService');
-        }
-      } catch (error) {
-        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
-      }
     }
     
     return convertedLicense;
@@ -285,35 +244,19 @@ class NuxiDevLicenseService {
     const { ID, ...dataToUpdate } = licenseData;
     
     // Prepare SET clause for the UPDATE query
-    const updates = Object.keys(dataToUpdate).map((key, index) => {
+    const updates = Object.keys(dataToUpdate).map(key => {
       let columnName;
       
-      // Pour MySQL, conserver le nom exact de la colonne, pas de conversion
-      if (useMySQL) {
-        if (key === 'ID') {
-          columnName = 'id'; // seul cas particulier
-        } else {
-          columnName = key; // garder le nom tel quel
-        }
+      // Conserver le nom exact de la colonne, juste cas spécial pour ID
+      if (key === 'ID') {
+        columnName = 'id'; // seul cas particulier
       } else {
-        // Pour PostgreSQL, convertir PascalCase en snake_case
-        if (key === 'ID') {
-          columnName = 'id';
-        } else {
-          // Convert properly PascalCase to snake_case (first letter lowercase, rest with underscore)
-          columnName = key.charAt(0).toLowerCase() + 
-                      key.slice(1).replace(/([A-Z])/g, '_$1').toLowerCase();
-        }
+        columnName = key; // garder le nom tel quel
       }
       
       console.log('UPDATE - Converting property:', key, '-> to DB column:', columnName);
       
-      // Différent format selon la base de données
-      if (useMySQL) {
-        return `${columnName} = ?`;
-      } else {
-        return `"${columnName}" = $${index + 1}`;
-      }
+      return `${columnName} = ?`;
     });
     
     const values = Object.values(dataToUpdate);
@@ -321,60 +264,52 @@ class NuxiDevLicenseService {
     // Add ID to values array
     values.push(id);
     
-    const query = useMySQL
-      ? `
-          UPDATE ${this.tableName}
-          SET ${updates.join(', ')}
-          WHERE id = ?
-        `
-      : `
-          UPDATE ${this.tableName}
-          SET ${updates.join(', ')}
-          WHERE "id" = $${values.length}
-          RETURNING *
-        `;
+    const query = `
+        UPDATE ${this.tableName}
+        SET ${updates.join(', ')}
+        WHERE id = ?
+      `;
     
     const results = await executeRawQuery(query, values);
     
-    // Pour MySQL, faire une requête supplémentaire pour obtenir la ligne mise à jour
-    if (useMySQL) {
-      const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
-      const selectResults = await executeRawQuery(selectQuery, [id]);
-      const updatedRows = selectResults as any[];
-      
-      // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
-      const updatedLicense = updatedRows[0];
-      if (updatedLicense && updatedLicense.IDSynchro && updatedLicense.FTP1_Hote && updatedLicense.Secu2Srv1) {
-        try {
-          log(`Mise à jour des fichiers de sécurité FTP pour la licence #${id} (ID de Synchro: ${updatedLicense.IDSynchro})`, 'licenseService');
-          const ftpResult = await ftpService.uploadSecurityFiles(
-            updatedLicense.FTP1_Hote, 
-            updatedLicense.IDSynchro, 
-            updatedLicense.Secu2Srv1
-          );
-          
-          if (ftpResult) {
-            log(`Fichiers de sécurité FTP mis à jour avec succès pour la licence #${id}`, 'licenseService');
-          } else {
-            log(`Erreur lors de la mise à jour des fichiers de sécurité FTP pour la licence #${id}`, 'licenseService');
-          }
-        } catch (error) {
-          log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
-        }
-      } else {
-        log(`Informations FTP incomplètes pour la licence #${id}, aucun fichier de sécurité mis à jour`, 'licenseService');
-      }
-      
-      return updatedRows;
+    // Vérifier si l'update a bien fonctionné en regardant affectedRows
+    if ((results as any).affectedRows === 0) {
+      throw new Error(`Failed to update license #${id}: no rows affected`);
     }
-    const updatedRows = results as any[];
+    
+    // Faire une requête supplémentaire pour obtenir la ligne mise à jour
+    const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ?`;
+    const selectResults = await executeRawQuery(selectQuery, [id]);
+    const updatedRows = selectResults as any[];
     
     if (updatedRows.length === 0) {
-      throw new Error('Failed to update license');
+      throw new Error(`Failed to retrieve updated license #${id}`);
+    }
+    
+    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp
+    const updatedLicense = updatedRows[0];
+    if (updatedLicense && updatedLicense.IDSynchro && updatedLicense.FTP1_Hote && updatedLicense.Secu2Srv1) {
+      try {
+        log(`Mise à jour des fichiers de sécurité FTP pour la licence #${id} (ID de Synchro: ${updatedLicense.IDSynchro})`, 'licenseService');
+        const ftpResult = await ftpService.uploadSecurityFiles(
+          updatedLicense.FTP1_Hote, 
+          updatedLicense.IDSynchro, 
+          updatedLicense.Secu2Srv1
+        );
+        
+        if (ftpResult) {
+          log(`Fichiers de sécurité FTP mis à jour avec succès pour la licence #${id}`, 'licenseService');
+        } else {
+          log(`Erreur lors de la mise à jour des fichiers de sécurité FTP pour la licence #${id}`, 'licenseService');
+        }
+      } catch (error) {
+        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
+      }
+    } else {
+      log(`Informations FTP incomplètes pour la licence #${id}, aucun fichier de sécurité mis à jour`, 'licenseService');
     }
     
     // Convert snake_case to PascalCase for frontend compatibility
-    const updatedLicense = updatedRows[0];
     const convertedLicense: any = {};
     for (const [key, value] of Object.entries(updatedLicense)) {
       // Convert snake_case to PascalCase
@@ -382,26 +317,6 @@ class NuxiDevLicenseService {
       // Ensure first letter is capitalized
       const finalKey = pascalKey.charAt(0).toUpperCase() + pascalKey.slice(1);
       convertedLicense[finalKey] = value;
-    }
-    
-    // Gérer l'upload FTP pour les fichiers .htaccess et .htmdp (pour PostgreSQL)
-    if (updatedLicense && updatedLicense.id_synchro && updatedLicense.ftp1_hote && updatedLicense.secu2_srv1) {
-      try {
-        log(`Mise à jour des fichiers de sécurité FTP pour la licence #${updatedLicense.id} (ID de Synchro: ${updatedLicense.id_synchro})`, 'licenseService');
-        const ftpResult = await ftpService.uploadSecurityFiles(
-          updatedLicense.ftp1_hote, 
-          updatedLicense.id_synchro, 
-          updatedLicense.secu2_srv1
-        );
-        
-        if (ftpResult) {
-          log(`Fichiers de sécurité FTP mis à jour avec succès pour la licence #${updatedLicense.id}`, 'licenseService');
-        } else {
-          log(`Erreur lors de la mise à jour des fichiers de sécurité FTP pour la licence #${updatedLicense.id}`, 'licenseService');
-        }
-      } catch (error) {
-        log(`Exception lors de l'upload FTP: ${error instanceof Error ? error.message : String(error)}`, 'licenseService');
-      }
     }
     
     return convertedLicense;
@@ -416,34 +331,19 @@ class NuxiDevLicenseService {
     
     console.log(`Vérification de l'unicité de l'ID de Synchro: ${idSynchro}, excluant l'ID: ${excludeLicenseId || 'aucun'}`);
     
-    // Adapter la syntaxe SQL en fonction du type de base de données
-    let query;
+    // Requête SQL pour vérifier l'existence d'un ID Synchro
+    let query = `
+      SELECT * 
+      FROM ${this.tableName} 
+      WHERE IDSynchro = ?
+    `;
+    
     let params: any[] = [idSynchro];
     
-    if (useMySQL) {
-      query = `
-        SELECT * 
-        FROM ${this.tableName} 
-        WHERE IDSynchro = ?
-      `;
-      
-      // Si on exclut une licence spécifique (pour les mises à jour)
-      if (excludeLicenseId) {
-        query += ` AND id != ?`;
-        params.push(excludeLicenseId);
-      }
-    } else {
-      query = `
-        SELECT * 
-        FROM ${this.tableName} 
-        WHERE "IDSynchro" = $1
-      `;
-      
-      // Si on exclut une licence spécifique (pour les mises à jour)
-      if (excludeLicenseId) {
-        query += ` AND "id" != $2`;
-        params.push(excludeLicenseId);
-      }
+    // Si on exclut une licence spécifique (pour les mises à jour)
+    if (excludeLicenseId) {
+      query += ` AND id != ?`;
+      params.push(excludeLicenseId);
     }
     
     const results = await executeRawQuery(query, params);
