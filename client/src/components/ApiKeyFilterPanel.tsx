@@ -36,20 +36,6 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
     }
   };
   
-  const handleReset = () => {
-    onFilterChange({
-      clientId: "",
-      apiKey: "",
-      serial: "",
-      onlyExpired: false,
-      showInactive: false
-    });
-    
-    if (formRef.current) {
-      formRef.current.reset();
-    }
-  };
-  
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
@@ -107,17 +93,6 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
               />
               <Label htmlFor="showInactive">Afficher inactives (avec STOP)</Label>
             </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <NuxiButton 
-              type="button"
-              variant="outline" 
-              onClick={handleReset}
-              size="sm"
-            >
-              Réinitialiser les filtres
-            </NuxiButton>
           </div>
         </form>
       </CardContent>
