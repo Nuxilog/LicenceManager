@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { NuxiSavLicense, NuxiSavPoste } from "@/types/license";
-import { ClipboardCopy, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 
 interface NuxiSavLicenseFormProps {
   license: NuxiSavLicense | null;
@@ -248,7 +248,7 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
                   onClick={() => copyToClipboard(editedLicense.SerialPermanente || '')}
                   className="ml-2"
                 >
-                  <ClipboardCopy className="h-4 w-4" />
+                  <Copy className="h-4 w-4" />
                 </Button>
               </div>
             </div>
