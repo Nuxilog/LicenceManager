@@ -1,0 +1,27 @@
+- Ok passons à la génération de l’onglet Licences NuxiSav. qui doit être dans la même logique que les autres, (une partie recherche, un tableau pour les licences et une partie édition/modification de la licence)
+- Ces licences sont dans la même base de données mais dans 2 tables : “Licences” et “Postes”. Commence par analyser la structure de ces 2 tables ou demande moi la structure si tu n’arrives pas à la scanner. 
+- Un enregistrement Licences peut avoir plusieurs Postes et la liaisons est sur la rubrique Licences.IdLicence = Postes.IDLicence.
+
+Commençons pas la table principale “Licences” qui va alimenter le premier tableau , les rubriques à placer dans le tableau sont : IdClient, IdentifiantWeb, SerialPermanente, NbrPermanente,Options (jetons d’options comme tu as fait dans licences studio pour la colonne modules) dans cette rubrique les jetons sont séparés par virgule, Version, Suspendu (fait comme la colonne suspendu des licences NuxiDev)
+
+Les Options jetons possibles sélectionnables sont les suivants
+Valeur Affichée : Atelier Valeur mémorisée : Atel
+Valeur Affichée : Tracking - Valeur mémorisée : Trck
+Valeur Affichée : Ticket web - Valeur mémorisée : TckWeb
+Valeur Affichée : Audit - Valeur mémorisée : Aud
+Valeur Affichée : SDK - Valeur mémorisée : sdk
+
+
+La partie édition/modification de licence doit permettre la modification de ces rubriques et également posséder un tableau pour la table “Postes” liée à cet enregistrement.
+
+Le nombre de ligne du tableau et donc le nombre d’enregistrement pour un même IDClient correspond à la valeur Licences.NbrPermanente. Si je change cette valeur, il faut donc soit supprimer des enregistrements postes soit en ajouter pour que ça corresponde. 
+
+Si tu dois ajouter des enregistrements Postes il faut pré-remplir avec : 
+Postes.IDLicence = Licences.IdLicence
+Postes.Serial = Licences.SerialPermanente
+
+Les colonnes de ce 2eme tableau Postes sont liées aux rubriques : 
+Postes.IDLicence, Postes.Serial , Postes.Emprunte_PC,  Postes.Nom_Poste, Postes.Nom_Session, Postes.Der_Utilisation, Postes.Version, Postes.Connecte, Fonction
+
+
+La colonne Fonction correspond à un bouton “Libérer” pour libérer la licence. Le clic sur ce bouton va effacer les valeurs : Postes.Emprunte_PC , Postes.Nom_Poste, Postes.Nom_Session, Postes.Der_Utilisation, Postes.Version,  Postes.Connecte sur le tableau et dans la base

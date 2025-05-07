@@ -95,3 +95,39 @@ export interface ApiKeyLicense {
   LastUsed: string;
   Restriction: string;
 }
+
+export interface NuxiSavLicense {
+  ID: number;
+  IdClient: number;
+  IdentifiantWeb: string | null;
+  SerialPermanente: string | null;
+  NbrPermanente: number;
+  Options: string | null;
+  Version: string | null;
+  Suspendu: number | null;
+  Postes: NuxiSavPoste[];
+}
+
+export interface NuxiSavPoste {
+  ID: number;
+  IDLicence: number;
+  Serial: string | null;
+  Emprunte_PC: string | null;
+  Nom_Poste: string | null;
+  Nom_Session: string | null;
+  Der_Utilisation: string | null;
+  Version: string | null;
+  Connecte: number | null;
+}
+
+export interface NuxiSavLicenseFilters {
+  idClient?: string;
+  identifiantWeb?: string;
+  serial?: string;
+  onlyWithAtel?: boolean;
+  onlyWithTrck?: boolean;
+  onlyWithTckWeb?: boolean;
+  onlyWithAud?: boolean;
+  onlyWithSdk?: boolean;
+  hideSuspended?: boolean;
+}
