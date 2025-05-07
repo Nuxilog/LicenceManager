@@ -6,6 +6,7 @@ import LicenseManager from "@/pages/LicenseManager";
 import NuxiDevLicenses from "@/pages/NuxiDevLicenses";
 import NuxiSavLicenses from "@/pages/NuxiSavLicenses";
 import StudioLicenses from "@/pages/StudioLicenses";
+import ApiKeyLicenses from "@/pages/ApiKeyLicenses";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout";
 
@@ -17,6 +18,7 @@ function Router() {
         <Route path="/licenses/nuxidev" component={NuxiDevLicenses} />
         <Route path="/licenses/nuxisav" component={NuxiSavLicenses} />
         <Route path="/licenses/studio" component={StudioLicenses} />
+        <Route path="/licenses/apikey" component={ApiKeyLicenses} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
