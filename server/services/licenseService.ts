@@ -1,6 +1,6 @@
 import { executeRawQuery, getDb, describeTable } from '../db';
-import { LicenseFilters, SortConfig } from '../../client/src/types/license';
-import { nuxiDevLicenses } from '@shared/schema';
+import { LicenseFilters, SortConfig, StudioLicenseFilters } from '../../client/src/types/license';
+import { nuxiDevLicenses, studioLicenses } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import { ftpService } from './ftpService';
 import { log } from '../vite';
@@ -367,3 +367,258 @@ class NuxiDevLicenseService {
 }
 
 export const nuxiDevLicenseService = new NuxiDevLicenseService();
+
+class StudioLicenseService {
+  // Nom de la table pour les licences Studio
+  private tableName = 'licences_studio';
+  
+  /**
+   * Get studio licenses with optional filtering and sorting
+   */
+  async getLicenses(filters: StudioLicenseFilters, sortConfig: SortConfig, page: number = 1, pageSize: number = 10) {
+    // Log received filters for debugging
+    console.log('Received studio filters:', JSON.stringify(filters));
+    console.log('Received sort config:', JSON.stringify(sortConfig));
+    console.log('Page:', page, 'Page size:', pageSize);
+    
+    // Calculer l'offset pour la pagination
+    const offset = (page - 1) * pageSize;
+    
+    // Build raw SQL query
+    let query = `
+      SELECT * 
+      FROM ${this.tableName}
+      WHERE 1=1
+    `;
+    
+    const queryParams: any[] = [];
+    
+    // Utiliser ? comme placeholder pour MySQL
+    const paramPlaceholder = '?';
+    
+    // Apply filters
+    if (filters.numClient) {
+      query += ` AND NumClient = ${paramPlaceholder}`;
+      queryParams.push(filters.numClient);
+      console.log('Added filter for numClient (exacte):', filters.numClient);
+    }
+    
+    if (filters.serial) {
+      query += ` AND Serial LIKE ${paramPlaceholder}`;
+      queryParams.push(`%${filters.serial}%`);
+      console.log('Added filter for serial (contient):', filters.serial);
+    }
+    
+    if (filters.identifiantUser) {
+      query += ` AND IdentifiantUser LIKE ${paramPlaceholder}`;
+      queryParams.push(`%${filters.identifiantUser}%`);
+      console.log('Added filter for identifiantUser (contient):', filters.identifiantUser);
+    }
+    
+    // Filtres pour les modules
+    if (filters.onlyWithPDF) {
+      query += ` AND PDF = 1`;
+      console.log('Added filter for onlyWithPDF');
+    }
+    
+    if (filters.onlyWithVue) {
+      query += ` AND Vue = 1`;
+      console.log('Added filter for onlyWithVue');
+    }
+    
+    if (filters.onlyWithPagePerso) {
+      query += ` AND PagePerso = 1`;
+      console.log('Added filter for onlyWithPagePerso');
+    }
+    
+    if (filters.onlyWithWDE) {
+      query += ` AND WDE = 1`;
+      console.log('Added filter for onlyWithWDE');
+    }
+    
+    // Ne pas inclure les licences suspendues si spécifié
+    if (filters.hideSuspended) {
+      query += ` AND Suspendu = 0`;
+      console.log('Hiding suspended licenses');
+    }
+    
+    // In this database, use the Pascal case column names
+    let sortKey = sortConfig.key;
+    
+    // Special case for ID - convert to IdLicencesStudio which is the primary key column name
+    if (sortKey === 'ID') {
+      sortKey = 'IdLicencesStudio';
+    }
+    
+    console.log('Sorting by:', sortConfig.key, '-> using DB column:', sortKey);
+    
+    // Ne pas entourer les noms de colonnes avec des guillemets pour MySQL
+    query += ` ORDER BY ${sortKey} ${sortConfig.direction.toUpperCase()}`;
+    
+    // Ajout de la pagination
+    query += ` LIMIT ${pageSize} OFFSET ${offset}`;
+    
+    // Log final query and parameters
+    console.log('Executing SQL query:', query);
+    console.log('With parameters:', queryParams);
+    
+    // Execute query
+    const results = await executeRawQuery(query, queryParams);
+    // Cast des résultats en tableau pour utiliser map
+    const licenses = results as any[];
+    
+    // Convertir les noms de colonnes pour la cohérence avec le frontend
+    return licenses.map((row: any) => {
+      const convertedRow: any = {};
+      for (const [key, value] of Object.entries(row)) {
+        // Cas spécial pour IdLicencesStudio -> ID
+        if (key === 'IdLicencesStudio') {
+          convertedRow['ID'] = value;
+        } else {
+          // Conserver tel quel
+          convertedRow[key] = value;
+        }
+      }
+      return convertedRow;
+    });
+  }
+  
+  /**
+   * Get a single studio license by ID
+   */
+  async getLicenseById(id: number) {
+    // Requête SQL pour récupérer une licence studio par son ID
+    const query = `
+      SELECT * 
+      FROM ${this.tableName} 
+      WHERE IdLicencesStudio = ?
+    `;
+    
+    const results = await executeRawQuery(query, [id]);
+    const licenses = results as any[];
+    
+    if (licenses.length === 0) {
+      return null;
+    }
+    
+    // Convertir les noms de colonnes pour la cohérence avec le frontend
+    const license = licenses[0];
+    const convertedLicense: any = {};
+    for (const [key, value] of Object.entries(license)) {
+      // Cas spécial pour IdLicencesStudio -> ID
+      if (key === 'IdLicencesStudio') {
+        convertedLicense['ID'] = value;
+      } else {
+        // Conserver tel quel
+        convertedLicense[key] = value;
+      }
+    }
+    
+    return convertedLicense;
+  }
+  
+  /**
+   * Create a new studio license
+   */
+  async createLicense(licenseData: any) {
+    // Remove ID if it exists and handle special case for ID/IdLicencesStudio
+    const { ID, ...dataToInsert } = licenseData;
+    
+    // Prepare columns and values for the INSERT query
+    const columns = Object.keys(dataToInsert);
+    const values = Object.values(dataToInsert);
+    
+    // Utiliser ? pour les paramètres en MySQL
+    const placeholders = Array(columns.length).fill('?').join(', ');
+    
+    const query = `
+      INSERT INTO ${this.tableName} (${columns.join(', ')})
+      VALUES (${placeholders})
+    `;
+    
+    const results = await executeRawQuery(query, values);
+    
+    // Pour MySQL, faire une requête supplémentaire pour obtenir la ligne insérée
+    const insertId = (results as any).insertId;
+    if (!insertId) {
+      throw new Error('Failed to create studio license: no insertId returned');
+    }
+    
+    const selectQuery = `SELECT * FROM ${this.tableName} WHERE IdLicencesStudio = ?`;
+    const selectResults = await executeRawQuery(selectQuery, [insertId]);
+    const insertedRows = selectResults as any[];
+    
+    if (insertedRows.length === 0) {
+      throw new Error('Failed to retrieve created studio license');
+    }
+    
+    // Convertir les noms de colonnes pour la cohérence avec le frontend
+    const insertedLicense = insertedRows[0];
+    const convertedLicense: any = {};
+    for (const [key, value] of Object.entries(insertedLicense)) {
+      // Cas spécial pour IdLicencesStudio -> ID
+      if (key === 'IdLicencesStudio') {
+        convertedLicense['ID'] = value;
+      } else {
+        // Conserver tel quel
+        convertedLicense[key] = value;
+      }
+    }
+    
+    return convertedLicense;
+  }
+  
+  /**
+   * Update an existing studio license
+   */
+  async updateLicense(id: number, licenseData: any) {
+    // Remove ID from the data to update
+    const { ID, ...dataToUpdate } = licenseData;
+    
+    // Prepare SET clause for the UPDATE query
+    const updates = Object.keys(dataToUpdate).map(key => `${key} = ?`);
+    const values = Object.values(dataToUpdate);
+    
+    // Add ID to values array
+    values.push(id);
+    
+    const query = `
+      UPDATE ${this.tableName}
+      SET ${updates.join(', ')}
+      WHERE IdLicencesStudio = ?
+    `;
+    
+    const results = await executeRawQuery(query, values);
+    
+    // Vérifier si l'update a bien fonctionné en regardant affectedRows
+    if ((results as any).affectedRows === 0) {
+      throw new Error(`Failed to update studio license #${id}: no rows affected`);
+    }
+    
+    // Faire une requête supplémentaire pour obtenir la ligne mise à jour
+    const selectQuery = `SELECT * FROM ${this.tableName} WHERE IdLicencesStudio = ?`;
+    const selectResults = await executeRawQuery(selectQuery, [id]);
+    const updatedRows = selectResults as any[];
+    
+    if (updatedRows.length === 0) {
+      throw new Error(`Failed to retrieve updated studio license #${id}`);
+    }
+    
+    // Convertir les noms de colonnes pour la cohérence avec le frontend
+    const updatedLicense = updatedRows[0];
+    const convertedLicense: any = {};
+    for (const [key, value] of Object.entries(updatedLicense)) {
+      // Cas spécial pour IdLicencesStudio -> ID
+      if (key === 'IdLicencesStudio') {
+        convertedLicense['ID'] = value;
+      } else {
+        // Conserver tel quel
+        convertedLicense[key] = value;
+      }
+    }
+    
+    return convertedLicense;
+  }
+}
+
+export const studioLicenseService = new StudioLicenseService();

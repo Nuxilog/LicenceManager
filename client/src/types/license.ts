@@ -49,7 +49,30 @@ export interface LicenseFilters {
   onlyNuxiDev?: boolean;
 }
 
+export interface StudioLicenseFilters {
+  numClient?: string;
+  serial?: string;
+  identifiantUser?: string;
+  onlyWithPDF?: boolean;
+  onlyWithVue?: boolean;
+  onlyWithPagePerso?: boolean;
+  onlyWithWDE?: boolean;
+  hideSuspended?: boolean;
+}
+
 export interface SortConfig {
   key: string;
   direction: 'asc' | 'desc';
+}
+
+export interface StudioLicense {
+  ID: number;
+  NumClient: number;
+  Serial: string | null;
+  IdentifiantUser: string | null;
+  PDF: number;
+  Vue: number;
+  PagePerso: number;
+  WDE: number;
+  Suspendu: number;
 }
