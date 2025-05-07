@@ -26,7 +26,7 @@ export default function LicenseManager() {
   });
   
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 15;
   
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);

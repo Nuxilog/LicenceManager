@@ -29,7 +29,7 @@ export default function StudioLicenses() {
   });
   
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 15;
   
   const [selectedLicense, setSelectedLicense] = useState<StudioLicense | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
