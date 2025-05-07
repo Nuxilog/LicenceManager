@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import 'dotenv/config';
 import * as schema from '@shared/schema';
-import { Connection } from 'mysql2/promise';
+import { Connection, Pool } from 'mysql2/promise';
 import type { MySqlDatabase } from 'drizzle-orm/mysql2';
 
 // Toujours utiliser MySQL
@@ -14,6 +14,7 @@ type DbConnection = MySqlConnection | null;
 type DrizzleDb = MySqlDatabase<any, any> | null;
 
 let connection: DbConnection = null;
+let pool: Pool | null = null;
 let db: DrizzleDb = null;
 
 // Function to establish database connection
@@ -23,7 +24,7 @@ async function createDatabaseConnection(): Promise<DbPromiseResult> {
     const mysql = await import('mysql2/promise');
     const { drizzle } = await import('drizzle-orm/mysql2');
     
-    // Ajouter un délai d'attente et un timeout
+    // Configuration avec reconnexion automatique
     const connectionConfig = {
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT || '3306'),
@@ -31,21 +32,35 @@ async function createDatabaseConnection(): Promise<DbPromiseResult> {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       connectTimeout: 10000, // 10 secondes max pour se connecter
-      waitForConnections: true
+      waitForConnections: true,
+      // Activer la reconnexion automatique
+      connectionLimit: 10,
+      queueLimit: 0
     };
     
-    console.log('Connecting to MySQL database...');
-    connection = await mysql.createConnection(connectionConfig);
-    console.log('MySQL connection established successfully.');
+    console.log('Creating MySQL connection pool...');
+    // Créer un pool global et le stocker
+    pool = mysql.createPool(connectionConfig);
+    console.log('MySQL connection pool created successfully.');
 
-    db = drizzle(connection);
-    return { connection, db };
+    // Obtenir une connexion pour Drizzle
+    try {
+      const conn = await pool.getConnection();
+      connection = conn;
+      db = drizzle(conn);
+      conn.release(); // Release the connection back to the pool
+    } catch (connError) {
+      console.error('Error getting connection from pool:', connError);
+    }
+    
+    return { connection, db, pool };
   } catch (error) {
     console.error('Error connecting to database:', error);
     // Retourner une connexion vide pour permettre à l'application de démarrer
     return { 
       connection: null, 
-      db: null 
+      db: null,
+      pool: null
     };
   }
 }
@@ -54,12 +69,14 @@ async function createDatabaseConnection(): Promise<DbPromiseResult> {
 type DbPromiseResult = {
   connection: DbConnection;
   db: DrizzleDb;
+  pool: Pool | null;
 };
 
 // Initialize connection in background
 let dbPromise: Promise<DbPromiseResult> = Promise.resolve({ 
   connection: null, 
-  db: null 
+  db: null,
+  pool: null 
 });
 
 // Start async connection but don't wait for it
@@ -94,18 +111,17 @@ export async function describeTable(tableName: string) {
 
 // For raw SQL queries
 export async function executeRawQuery(query: string, params: any[] = []) {
-  const { connection } = await dbPromise;
+  const { pool } = await dbPromise;
   
-  // Si pas de connexion disponible, renvoyer un tableau vide
-  if (!connection) {
-    console.warn("Database connection not available - returning empty result for query:", query);
+  // Si pas de pool disponible, renvoyer un tableau vide
+  if (!pool) {
+    console.warn("Database connection pool not available - returning empty result for query:", query);
     return [];
   }
   
   try {
-    // Type assertion pour aider TypeScript à comprendre la connexion MySQL
-    const mysqlConnection = connection as MySqlConnection;
-    const [results] = await mysqlConnection.query(query, params);
+    // Exécuter directement la requête avec le pool (pas besoin de connection/release manuellement)
+    const [results] = await pool.query(query, params);
     return results;
   } catch (error: any) {
     console.error("Error executing query:", error);
@@ -113,8 +129,7 @@ export async function executeRawQuery(query: string, params: any[] = []) {
     if (error.code === 'ER_NO_SUCH_TABLE') {
       try {
         console.log("Tentative de lister les tables disponibles...");
-        const mysqlConnection = connection as MySqlConnection;
-        const [tables] = await mysqlConnection.query('SHOW TABLES');
+        const [tables] = await pool.query('SHOW TABLES');
         console.log("Tables disponibles dans la base de données:", tables);
       } catch (listError) {
         console.error("Impossible de lister les tables:", listError);
@@ -129,18 +144,17 @@ export async function executeRawQuery(query: string, params: any[] = []) {
 
 // Function to list all database tables
 export async function listTables() {
-  const { connection } = await dbPromise;
+  const { pool } = await dbPromise;
   
-  // Si pas de connexion disponible, renvoyer un tableau vide
-  if (!connection) {
-    console.warn("Database connection not available - cannot list tables");
+  // Si pas de pool disponible, renvoyer un tableau vide
+  if (!pool) {
+    console.warn("Database connection pool not available - cannot list tables");
     return [];
   }
   
   try {
     console.log("Listing all available tables...");
-    const mysqlConnection = connection as MySqlConnection;
-    const [tables] = await mysqlConnection.query('SHOW TABLES');
+    const [tables] = await pool.query('SHOW TABLES');
     console.log("Tables available in database:", tables);
     return tables;
   } catch (error: any) {
