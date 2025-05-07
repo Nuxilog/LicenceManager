@@ -128,7 +128,7 @@ export default function NuxiSavLicenseTable({
           {licenses.map((license) => (
             <TableRow 
               key={license.ID}
-              className={`py-2 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-slate-100' : ''}`}
+              className={`cursor-pointer ${selectedLicenseId === license.ID ? 'bg-slate-100' : ''}`}
               onClick={() => onSelectLicense(license)}
             >
               <TableCell className="font-medium">{license.ID}</TableCell>
@@ -138,7 +138,7 @@ export default function NuxiSavLicenseTable({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="truncate block max-w-[150px]">{license.SerialPermanente || '-'}</span>
+                      <span className="truncate block max-w-[220px]">{license.SerialPermanente || '-'}</span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{license.SerialPermanente}</p>
