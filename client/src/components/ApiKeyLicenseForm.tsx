@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { ApiKeyLicense } from "@/types/license";
 import { format } from "date-fns";
-import { Copy, RefreshCw } from "lucide-react";
+import { Copy, RefreshCw, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateSerial } from "@/lib/licenseUtils";
 
@@ -119,6 +119,11 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
       if (!prev) return null;
       return { ...prev, ApiKeyV5: keyV5 };
     });
+  };
+
+  // Ouvrir Google Cloud Console pour générer une véritable clé API
+  const openGoogleCloudConsole = () => {
+    window.open("https://console.cloud.google.com/apis/credentials?inv=1&invt=Abwt5A&project=test-interne-uniquement&pli=1", "_blank");
   };
 
   return (
@@ -291,6 +296,22 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
           </div>
         </div>
 
+        {/* Bouton Google Cloud Console pour générer des clés API */}
+        <div className="mb-6">
+          <NuxiButton 
+            type="button"
+            variant="outline"
+            className="inline-flex items-center text-blue-700 border-blue-500"
+            onClick={openGoogleCloudConsole}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Ouvrir Google Cloud Console pour générer une clé API
+          </NuxiButton>
+          <p className="text-sm text-gray-500 mt-2">
+            Utilisez la console Google Cloud pour générer une véritable clé API pour les services Google
+          </p>
+        </div>
+        
         {/* Form buttons */}
         <div className="flex justify-end space-x-2">
           <NuxiButton 

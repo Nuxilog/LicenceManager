@@ -49,10 +49,8 @@ class ApiKeyService {
       // Filtre pour les licences épuisées (quantité <= 0)
       if (filters.onlyExpired === 'true') {
         query += ` AND Qte <= 0`;
-      } else {
-        // Exclure les licences épuisées par défaut
-        query += ` AND Qte > 0`;
       }
+      // Si onlyExpired n'est pas 'true', ne pas filtrer par quantité
       
       // Filtre pour les licences inactives avec "STOP" dans la restriction
       if (filters.showInactive === 'false') {
