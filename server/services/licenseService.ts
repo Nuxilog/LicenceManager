@@ -446,7 +446,7 @@ class StudioLicenseService {
     
     // Ne pas inclure les licences suspendues si spécifié
     if (filters.hideSuspended) {
-      query += ` AND Suspendu = 0`;
+      query += ` AND (Suspendu IS NULL OR Suspendu != 1)`;
       console.log('Hiding suspended licenses');
     }
     

@@ -100,7 +100,7 @@ export default function StudioFilterPanel({ filters, onFilterChange }: StudioFil
                 checked={filters.hideSuspended}
                 onCheckedChange={(checked) => handleChange("hideSuspended", Boolean(checked))}
               />
-              <Label htmlFor="hide-suspended" className="ml-2 text-sm">Masquer suspendues</Label>
+              <Label htmlFor="hide-suspended" className="ml-2 text-sm">Masquer licences suspendues</Label>
             </div>
           </div>
         </div>

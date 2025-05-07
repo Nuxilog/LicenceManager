@@ -51,8 +51,8 @@ export default function StudioLicenseTable({
   };
 
   // Rendre l'état suspendu
-  const renderSuspendedState = (suspended: number) => {
-    if (suspended) {
+  const renderSuspendedState = (suspended: number | null) => {
+    if (suspended === 1) {
       return <Badge variant="default" className="bg-red-600 hover:bg-red-700 px-1.5 py-0 text-xs">Suspendu</Badge>;
     }
     return <Badge variant="default" className="bg-green-600 hover:bg-green-700 px-1.5 py-0 text-xs">Actif</Badge>;
