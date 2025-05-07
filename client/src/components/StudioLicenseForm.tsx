@@ -83,22 +83,22 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow border mb-4">
-      <h3 className="text-xl font-semibold mb-4">
+    <div className="bg-white p-4 rounded-lg shadow border mb-4">
+      <h3 className="text-xl font-semibold mb-3">
         {isNew ? "Ajouter une nouvelle licence Studio" : `Modifier la licence Studio #${license?.ID}`}
       </h3>
       
       {formError && (
-        <div className="bg-red-50 text-red-700 p-3 rounded-md mb-4 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
+        <div className="bg-red-50 text-red-700 p-2 rounded-md mb-3 flex items-center gap-2 text-sm">
+          <AlertCircle className="h-4 w-4" />
           <span>{formError}</span>
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="NumClient">Numéro de client <span className="text-red-500">*</span></Label>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="NumClient" className="mb-1 text-sm">Numéro de client <span className="text-red-500">*</span></Label>
             <Input
               id="NumClient"
               name="NumClient"
@@ -108,11 +108,10 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
               onChange={handleInputChange}
               className="w-full"
             />
-            <p className="text-xs text-gray-500">Identifiant du client pour cette licence</p>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="Serial">Numéro de série <span className="text-red-500">*</span></Label>
+          <div>
+            <Label htmlFor="Serial" className="mb-1 text-sm">Numéro de série <span className="text-red-500">*</span></Label>
             <div className="flex gap-2">
               <Input
                 id="Serial"
@@ -125,38 +124,48 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
               <NuxiButton 
                 type="button" 
                 variant="secondary"
+                size="sm"
                 onClick={() => setFormData(prev => ({ ...prev, Serial: generateSerial() }))}
               >
                 Générer
               </NuxiButton>
             </div>
-            <p className="text-xs text-gray-500">Le numéro de série unique de la licence</p>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="IdentifiantUser">Identifiant utilisateur</Label>
-            <Input
-              id="IdentifiantUser"
-              name="IdentifiantUser"
-              value={formData.IdentifiantUser || ''}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500">Identifiant de l'utilisateur associé à cette licence</p>
+          <div className="grid grid-cols-1 gap-2">
+            <div>
+              <Label htmlFor="IdentifiantUser" className="mb-1 text-sm">Identifiant utilisateur</Label>
+              <Input
+                id="IdentifiantUser"
+                name="IdentifiantUser"
+                value={formData.IdentifiantUser || ''}
+                onChange={handleInputChange}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2 mt-1">
+              <Checkbox 
+                id="Suspendu" 
+                checked={formData.Suspendu === 1}
+                onCheckedChange={(checked) => handleCheckboxChange("Suspendu", checked === true)}
+              />
+              <Label htmlFor="Suspendu" className="text-sm">Licence suspendue</Label>
+            </div>
           </div>
         </div>
 
-        <div className="border-t pt-4 mt-4">
-          <h4 className="text-lg font-medium mb-3">Modules activés</h4>
+        <div className="border-t pt-3 mt-3">
+          <h4 className="text-md font-medium mb-2">Modules activés</h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id="PDF" 
                 checked={formData.PDF === 1}
                 onCheckedChange={(checked) => handleCheckboxChange("PDF", checked === true)}
               />
-              <Label htmlFor="PDF">Module PDF</Label>
+              <Label htmlFor="PDF" className="text-sm">Module PDF</Label>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -165,7 +174,7 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
                 checked={formData.Vue === 1}
                 onCheckedChange={(checked) => handleCheckboxChange("Vue", checked === true)}
               />
-              <Label htmlFor="Vue">Module Vue</Label>
+              <Label htmlFor="Vue" className="text-sm">Module Vue</Label>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -174,7 +183,7 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
                 checked={formData.PagePerso === 1}
                 onCheckedChange={(checked) => handleCheckboxChange("PagePerso", checked === true)}
               />
-              <Label htmlFor="PagePerso">Module Page Perso</Label>
+              <Label htmlFor="PagePerso" className="text-sm">Module Page Perso</Label>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -183,26 +192,24 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
                 checked={formData.WDE === 1}
                 onCheckedChange={(checked) => handleCheckboxChange("WDE", checked === true)}
               />
-              <Label htmlFor="WDE">Module WDE</Label>
+              <Label htmlFor="WDE" className="text-sm">Module WDE</Label>
             </div>
           </div>
         </div>
-
-        <div className="border-t pt-4 mt-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="Suspendu" 
-              checked={formData.Suspendu === 1}
-              onCheckedChange={(checked) => handleCheckboxChange("Suspendu", checked === true)}
-            />
-            <Label htmlFor="Suspendu">Licence suspendue</Label>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Une licence suspendue ne peut pas être utilisée</p>
-        </div>
         
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <NuxiButton type="submit" variant="primary">
-            {isNew ? "Créer la licence" : "Enregistrer les modifications"}
+        <div className="flex justify-end space-x-3 pt-3 border-t mt-3">
+          <NuxiButton 
+            type="button"
+            variant="primary"
+            onClick={() => setFormData(license)}
+          >
+            Annuler
+          </NuxiButton>
+          <NuxiButton 
+            type="submit"
+            variant="secondary"
+          >
+            Enregistrer
           </NuxiButton>
         </div>
       </form>
