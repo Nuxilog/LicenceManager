@@ -911,21 +911,23 @@ class NuxiSavLicenseService {
         WHERE IdLicence = ?
       `;
       
+      // Vérifier que tous les champs obligatoires ne sont pas null
+      // Dans MySQL, les colonnes NOT NULL ne peuvent pas recevoir NULL
       await executeRawQuery(updateQuery, [
-        licenseFields.IdClient,
-        licenseFields.NomSoft,
-        licenseFields.IdentifiantWeb,
-        licenseFields.SerialPermanente,
-        licenseFields.SerialFlotante,
-        licenseFields.Options,
+        licenseFields.IdClient || 0,
+        licenseFields.NomSoft || "",
+        licenseFields.IdentifiantWeb || "",
+        licenseFields.SerialPermanente || "",
+        licenseFields.SerialFlotante || "",
+        licenseFields.Options || "",  // Options ne peut pas être NULL
         licenseFields.Suspendu || 0,
-        licenseFields.IDSynchro,
-        licenseFields.Version,
-        licenseFields.DateLimite,
+        licenseFields.IDSynchro || "",
+        licenseFields.Version || "",
+        licenseFields.DateLimite, // Les dates peuvent être NULL si la colonne l'autorise
         licenseFields.NbrPermanente || 0,
         licenseFields.NbrFlotante || 0,
         licenseFields.NbrSession || 0,
-        licenseFields.Info,
+        licenseFields.Info || "",  // Si Info ne peut pas être NULL
         id
       ]);
       

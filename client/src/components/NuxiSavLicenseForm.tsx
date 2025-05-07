@@ -174,10 +174,10 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
     
     const optionsString = selectedOptions.join(',');
     
-    // Licence mise à jour avec les options
+    // Licence mise à jour avec les options (jamais null pour éviter l'erreur SQL)
     const updatedLicense = {
       ...editedLicense,
-      Options: optionsString || null
+      Options: optionsString || ""
     };
     
     onSave(updatedLicense);
