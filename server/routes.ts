@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 // Pas besoin d'importer db car il n'est pas utilisé
-import { nuxiDevLicenseService } from "./services/licenseService";
+import { nuxiDevLicenseService, studioLicenseService } from "./services/licenseService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Licenses API routes
@@ -123,6 +123,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating license:", error);
       res.status(500).json({ message: (error as Error).message || "Failed to update license" });
+    }
+  });
+
+  // Licences Studio API routes
+  app.get("/api/studio-licenses", async (req, res) => {
+    try {
+      const { 
+        numClient, 
+        serial, 
+        identifiantUser, 
+        onlyWithPDF,
+        onlyWithVue,
+        onlyWithPagePerso,
+        onlyWithWDE,
+        hideSuspended,
+        sortBy = "ID",
+        sortDirection = "desc",
+        page = "1",
+        pageSize = "10"
+      } = req.query as Record<string, string>;
+      
+      const filters = {
+        numClient,
+        serial,
+        identifiantUser,
+        onlyWithPDF: onlyWithPDF === "true",
+        onlyWithVue: onlyWithVue === "true",
+        onlyWithPagePerso: onlyWithPagePerso === "true",
+        onlyWithWDE: onlyWithWDE === "true",
+        hideSuspended: hideSuspended === "true"
+      };
+      
+      const pageNum = parseInt(page, 10) || 1;
+      const pageSizeNum = parseInt(pageSize, 10) || 10;
+      
+      const licenses = await studioLicenseService.getLicenses(
+        filters, 
+        { key: sortBy, direction: sortDirection as "asc" | "desc" },
+        pageNum,
+        pageSizeNum
+      );
+      
+      res.json(licenses);
+    } catch (error) {
+      console.error("Error fetching studio licenses:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to fetch studio licenses" });
+    }
+  });
+
+  app.get("/api/studio-licenses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid studio license ID" });
+      }
+      
+      const license = await studioLicenseService.getLicenseById(id);
+      
+      if (!license) {
+        return res.status(404).json({ message: "Studio license not found" });
+      }
+      
+      res.json(license);
+    } catch (error) {
+      console.error("Error fetching studio license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to fetch studio license" });
+    }
+  });
+
+  app.post("/api/studio-licenses", async (req, res) => {
+    try {
+      const licenseData = req.body;
+      
+      // Validate required fields
+      if (!licenseData.NumClient) {
+        return res.status(400).json({ message: "NumClient is required" });
+      }
+      
+      const newLicense = await studioLicenseService.createLicense(licenseData);
+      
+      res.status(201).json(newLicense);
+    } catch (error) {
+      console.error("Error creating studio license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to create studio license" });
+    }
+  });
+
+  app.put("/api/studio-licenses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid studio license ID" });
+      }
+      
+      const licenseData = req.body;
+      
+      // Check if license exists
+      const existingLicense = await studioLicenseService.getLicenseById(id);
+      if (!existingLicense) {
+        return res.status(404).json({ message: "Studio license not found" });
+      }
+      
+      const updatedLicense = await studioLicenseService.updateLicense(id, licenseData);
+      
+      res.json(updatedLicense);
+    } catch (error) {
+      console.error("Error updating studio license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to update studio license" });
     }
   });
 

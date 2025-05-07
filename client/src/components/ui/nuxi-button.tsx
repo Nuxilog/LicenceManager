@@ -11,6 +11,7 @@ const nuxiButtonVariants = cva(
       variant: {
         primary: "bg-white text-[#36599E] border border-[#36599E] hover:bg-[#E3E6EA] active:bg-[#36599E] active:text-white",
         secondary: "bg-[#36599E] text-white hover:bg-[#0A2A69] active:bg-[#85A3DE]",
+        outline: "bg-transparent text-[#36599E] border border-[#36599E] hover:bg-[#F3F6FA] active:bg-[#E3E6EA]",
       },
       size: {
         default: "",
@@ -31,8 +32,9 @@ const nuxiButtonVariants = cva(
 
 export interface NuxiButtonProps 
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof nuxiButtonVariants> {
+    Omit<VariantProps<typeof nuxiButtonVariants>, 'variant'> {
       fullWidth?: boolean;
+      variant?: 'primary' | 'secondary' | 'outline';
 }
 
 const NuxiButton = React.forwardRef<HTMLButtonElement, NuxiButtonProps>(
