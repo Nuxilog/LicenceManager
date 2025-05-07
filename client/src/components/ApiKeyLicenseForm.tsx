@@ -120,8 +120,6 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
       return { ...prev, ApiKeyV5: keyV5 };
     });
   };
-  
-
 
   return (
     <Card className="p-6">
