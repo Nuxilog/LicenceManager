@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { NuxiSavLicense, SortConfig } from "@/types/license";
+import { formatDateFr } from "@/lib/utils";
 
 interface NuxiSavLicenseTableProps {
   licenses: NuxiSavLicense[];
@@ -112,6 +113,12 @@ export default function NuxiSavLicenseTable({
             </TableHead>
             <TableHead 
               className="cursor-pointer"
+              onClick={() => onSort('Der_Utilisation')}
+            >
+              Dernière Utilisation {renderSortIcon('Der_Utilisation')}
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer"
               onClick={() => onSort('Version')}
             >
               Version {renderSortIcon('Version')}
@@ -148,6 +155,7 @@ export default function NuxiSavLicenseTable({
               </TableCell>
               <TableCell className="py-1 text-center">{license.NbrPermanente}</TableCell>
               <TableCell className="py-1">{renderOptionBadges(license.Options)}</TableCell>
+              <TableCell className="py-1">{formatDateFr(license.Der_Utilisation)}</TableCell>
               <TableCell className="py-1">{license.Version || '-'}</TableCell>
               <TableCell className="py-1 text-center">
                 {license.Suspendu === 1 ? (
