@@ -105,13 +105,9 @@ export default function NuxiSavLicenses() {
     <div className="container mx-auto px-4 py-6">
       <LicenseNavigation currentType="nuxisav" />
       
-      {/* Titre et bouton nouvelle licence */}
-      <div className="flex justify-between items-center mb-4">
+      {/* Titre */}
+      <div className="mb-4">
         <h1 className="text-2xl font-bold">Gestion des licences NuxiSAV</h1>
-        <Button onClick={handleNewLicense}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nouvelle licence
-        </Button>
       </div>
       
       {/* Panneau de filtres */}
@@ -132,15 +128,42 @@ export default function NuxiSavLicenses() {
         />
         
         {/* Pagination */}
-        {!isLoading && licenses && licenses.length > 0 && (
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
+        <div className="flex justify-center items-center my-4 space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1 || isLoading}
+          >
+            Précédent
+          </Button>
+          
+          <span className="text-sm text-slate-600">
+            Page {currentPage}
+          </span>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={!licenses || licenses.length < pageSize || isLoading}
+          >
+            Suivant
+          </Button>
+        </div>
+      </div>
+      
+      {/* Titre et bouton nouvelle licence */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-slate-900">Détails de la licence</h2>
+        <Button 
+          onClick={handleNewLicense}
+          variant="outline"
+          className="inline-flex items-center"
+        >
+          <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+          Nouvelle licence
+        </Button>
       </div>
       
       {/* Formulaire d'édition de licence */}
