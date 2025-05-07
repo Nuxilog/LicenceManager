@@ -10,6 +10,9 @@ interface ApiKeyFilterPanelProps {
   filters: {
     clientId: string;
     apiKey: string;
+    serial: string;
+    minQuantity: number | undefined;
+    hasRestriction: boolean;
     showExpired: boolean;
     showInactive: boolean;
   };
@@ -24,16 +27,21 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
     if (formRef.current) {
       const formData = new FormData(formRef.current);
       
+      const minQuantityValue = formData.get("minQuantity") as string;
+      const minQuantity = minQuantityValue ? parseInt(minQuantityValue) : undefined;
+      
       onFilterChange({
         ...filters,
         clientId: formData.get("clientId") as string || "",
         apiKey: formData.get("apiKey") as string || "",
+        serial: formData.get("serial") as string || "",
+        minQuantity
       });
     }
   };
   
   const handleSwitchChange = (field: keyof ApiKeyLicenseFilters) => {
-    if (field === 'showExpired' || field === 'showInactive') {
+    if (field === 'showExpired' || field === 'showInactive' || field === 'hasRestriction') {
       onFilterChange({
         ...filters,
         [field]: !filters[field]
@@ -45,6 +53,9 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
     onFilterChange({
       clientId: "",
       apiKey: "",
+      serial: "",
+      minQuantity: undefined,
+      hasRestriction: false,
       showExpired: false,
       showInactive: false
     });
@@ -58,7 +69,7 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
     <Card className="mb-6">
       <CardContent className="pt-6">
         <form ref={formRef} onSubmit={handleSubmit}>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div className="space-y-2">
               <Label htmlFor="clientId">ID Client</Label>
               <Input 
@@ -80,7 +91,39 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="showExpired" className="block mb-2">Afficher expirées</Label>
+              <Label htmlFor="serial">Numéro de série</Label>
+              <Input 
+                id="serial" 
+                name="serial" 
+                placeholder="Rechercher par numéro de série" 
+                defaultValue={filters.serial} 
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6 mb-6">
+            <div className="space-y-2">
+              <Label htmlFor="minQuantity">Quantité minimale</Label>
+              <Input 
+                id="minQuantity" 
+                name="minQuantity" 
+                type="number"
+                placeholder="Quantité minimale" 
+                defaultValue={filters.minQuantity?.toString() || ''} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="hasRestriction" className="block mb-2">Avec restrictions</Label>
+              <Switch 
+                id="hasRestriction" 
+                checked={filters.hasRestriction} 
+                onCheckedChange={() => handleSwitchChange('hasRestriction')} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="showExpired" className="block mb-2">Afficher épuisées (Qté = 0)</Label>
               <Switch 
                 id="showExpired" 
                 checked={filters.showExpired} 
@@ -89,7 +132,7 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="showInactive" className="block mb-2">Afficher inactives</Label>
+              <Label htmlFor="showInactive" className="block mb-2">Afficher inactives (STOP)</Label>
               <Switch 
                 id="showInactive" 
                 checked={filters.showInactive} 

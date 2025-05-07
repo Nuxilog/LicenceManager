@@ -3,8 +3,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ApiKeyLicense, ApiKeyLicenseFilters, SortConfig } from "@/types/license";
 
-// Nous n'utilisons plus de données mockées maintenant que nous avons l'API réelle
-
 // Fonction pour appliquer les filtres aux données API
 function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): ApiKeyLicense[] {
   return data.filter(license => {
@@ -18,12 +16,27 @@ function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): Api
       return false;
     }
     
-    // Filtres supplémentaires spécifiques à la table API
-    // Par exemple, filtre sur Restriction ou Quantity
+    // Filtrage par numéro de série
+    if (filters.serial && !license.Serial.toLowerCase().includes(filters.serial.toLowerCase())) {
+      return false;
+    }
+    
+    // Filtrage par quantité minimale
+    if (filters.minQuantity !== undefined && license.Quantity < filters.minQuantity) {
+      return false;
+    }
+    
+    // Filtrage par restriction
+    if (filters.hasRestriction && !license.Restriction.trim()) {
+      return false;
+    }
+    
+    // Ne pas afficher les licences inactives (avec STOP dans la restriction)
     if (!filters.showInactive && license.Restriction.toLowerCase().includes('stop')) {
       return false;
     }
     
+    // Ne pas afficher les licences épuisées (quantité = 0)
     if (!filters.showExpired && license.Quantity <= 0) {
       return false;
     }
@@ -82,6 +95,9 @@ export function useApiKeyLicenseData(filters: ApiKeyLicenseFilters, sortConfig: 
         const params = new URLSearchParams();
         if (filters.clientId) params.append('clientId', filters.clientId);
         if (filters.apiKey) params.append('apiKey', filters.apiKey);
+        if (filters.serial) params.append('serial', filters.serial);
+        if (filters.minQuantity !== undefined) params.append('minQuantity', filters.minQuantity.toString());
+        params.append('hasRestriction', filters.hasRestriction ? 'true' : 'false');
         params.append('showExpired', filters.showExpired ? 'true' : 'false');
         params.append('showInactive', filters.showInactive ? 'true' : 'false');
         params.append('sortBy', sortConfig.key);

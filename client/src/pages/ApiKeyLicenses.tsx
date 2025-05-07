@@ -15,6 +15,9 @@ export default function ApiKeyLicenses() {
   const [filters, setFilters] = useState({
     clientId: "",
     apiKey: "",
+    serial: "",
+    minQuantity: undefined as number | undefined,
+    hasRestriction: false,
     showExpired: false,
     showInactive: false
   });

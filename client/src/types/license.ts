@@ -63,6 +63,9 @@ export interface StudioLicenseFilters {
 export interface ApiKeyLicenseFilters {
   clientId?: string;
   apiKey?: string;
+  serial?: string;
+  minQuantity?: number;
+  hasRestriction?: boolean;
   showExpired?: boolean;
   showInactive?: boolean;
 }
