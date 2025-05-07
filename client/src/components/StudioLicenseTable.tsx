@@ -22,9 +22,9 @@ export default function StudioLicenseTable({
   onSelectLicense,
   selectedLicenseId
 }: StudioLicenseTableProps) {
-  // Formater un numéro client avec des zéros à gauche
+  // Formater un numéro client
   const formatNumClient = (num: number) => {
-    return String(num).padStart(5, '0');
+    return String(num);
   };
 
   // Render le header de colonne avec la flèche de tri

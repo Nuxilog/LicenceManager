@@ -96,43 +96,47 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
       )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="NumClient" className="mb-1 text-sm">Numéro de client <span className="text-red-500">*</span></Label>
-            <Input
-              id="NumClient"
-              name="NumClient"
-              type="number"
-              required
-              value={formData.NumClient || ''}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="Serial" className="mb-1 text-sm">Numéro de série <span className="text-red-500">*</span></Label>
-            <div className="flex gap-2">
+        <div className="grid grid-cols-1 gap-4">
+          {/* Première ligne: Numéro client et Numéro de série */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="NumClient" className="mb-1 text-sm">Numéro de client <span className="text-red-500">*</span></Label>
               <Input
-                id="Serial"
-                name="Serial"
+                id="NumClient"
+                name="NumClient"
+                type="number"
                 required
-                value={formData.Serial || ''}
+                value={formData.NumClient || ''}
                 onChange={handleInputChange}
-                className="flex-grow"
+                className="w-full"
               />
-              <NuxiButton 
-                type="button" 
-                variant="secondary"
-                size="sm"
-                onClick={() => setFormData(prev => ({ ...prev, Serial: generateSerial() }))}
-              >
-                Générer
-              </NuxiButton>
+            </div>
+            
+            <div>
+              <Label htmlFor="Serial" className="mb-1 text-sm">Numéro de série <span className="text-red-500">*</span></Label>
+              <div className="flex gap-2">
+                <Input
+                  id="Serial"
+                  name="Serial"
+                  required
+                  value={formData.Serial || ''}
+                  onChange={handleInputChange}
+                  className="flex-grow"
+                />
+                <NuxiButton 
+                  type="button" 
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setFormData(prev => ({ ...prev, Serial: generateSerial() }))}
+                >
+                  Générer
+                </NuxiButton>
+              </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 gap-2">
+          {/* Deuxième ligne: Identifiant utilisateur et Licence suspendue */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="IdentifiantUser" className="mb-1 text-sm">Identifiant utilisateur</Label>
               <Input
@@ -144,13 +148,13 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
               />
             </div>
             
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center pt-6">
               <Checkbox 
                 id="Suspendu" 
                 checked={formData.Suspendu === 1}
                 onCheckedChange={(checked) => handleCheckboxChange("Suspendu", checked === true)}
               />
-              <Label htmlFor="Suspendu" className="text-sm">Licence suspendue</Label>
+              <Label htmlFor="Suspendu" className="ml-2 text-sm">Licence suspendue</Label>
             </div>
           </div>
         </div>
@@ -201,7 +205,24 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
           <NuxiButton 
             type="button"
             variant="primary"
-            onClick={() => setFormData(license)}
+            onClick={() => {
+              if (license) {
+                setFormData({...license});
+              } else {
+                // Si pas de licence existante (création), réinitialiser le formulaire
+                setFormData({
+                  ID: 0,
+                  NumClient: 0,
+                  Serial: generateSerial(),
+                  IdentifiantUser: null,
+                  PDF: 0,
+                  Vue: 0,
+                  PagePerso: 0,
+                  WDE: 0,
+                  Suspendu: 0
+                });
+              }
+            }}
           >
             Annuler
           </NuxiButton>
