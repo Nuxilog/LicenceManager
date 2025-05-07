@@ -139,7 +139,7 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
           
           <div className="space-y-2">
             <Label htmlFor="serial" className="flex justify-between">
-              <span>Numéro de série</span>
+              <span>Serial</span>
               <div className="space-x-2">
                 <button 
                   type="button" 
@@ -148,14 +148,6 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
                 >
                   <Copy className="h-4 w-4 inline mr-1" />
                   Copier
-                </button>
-                <button 
-                  type="button" 
-                  className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={createNewSerial}
-                >
-                  <RefreshCw className="h-4 w-4 inline mr-1" />
-                  Générer
                 </button>
               </div>
             </Label>
@@ -197,26 +189,8 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="apiKeyV5" className="flex justify-between">
+            <Label htmlFor="apiKeyV5">
               <span>Clé API V5</span>
-              <div className="space-x-2">
-                <button 
-                  type="button" 
-                  className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={() => handleCopy(localLicense.ApiKeyV5)}
-                >
-                  <Copy className="h-4 w-4 inline mr-1" />
-                  Copier
-                </button>
-                <button 
-                  type="button" 
-                  className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={generateApiKeyV5}
-                >
-                  <RefreshCw className="h-4 w-4 inline mr-1" />
-                  Générer
-                </button>
-              </div>
             </Label>
             <Input 
               id="apiKeyV5" 
