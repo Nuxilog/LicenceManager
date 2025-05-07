@@ -20,18 +20,11 @@ interface ApiKeyFilterPanelProps {
 export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFilterPanelProps) {
   const formRef = useRef<HTMLFormElement>(null);
   
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (formRef.current) {
-      const formData = new FormData(formRef.current);
-      
-      onFilterChange({
-        ...filters,
-        clientId: formData.get("clientId") as string || "",
-        apiKey: formData.get("apiKey") as string || "",
-        serial: formData.get("serial") as string || "",
-      });
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFilterChange({
+      ...filters,
+      [e.target.name]: e.target.value
+    });
   };
   
   const handleSwitchChange = (field: keyof ApiKeyLicenseFilters) => {
@@ -60,7 +53,7 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
-        <form ref={formRef} onSubmit={handleSubmit}>
+        <form ref={formRef}>
           <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div className="space-y-2">
               <Label htmlFor="clientId">ID Client</Label>
@@ -68,7 +61,8 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
                 id="clientId" 
                 name="clientId" 
                 placeholder="Rechercher par ID client" 
-                defaultValue={filters.clientId} 
+                value={filters.clientId}
+                onChange={handleInputChange}
               />
             </div>
             
@@ -78,7 +72,8 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
                 id="apiKey" 
                 name="apiKey" 
                 placeholder="Rechercher par clé API" 
-                defaultValue={filters.apiKey} 
+                value={filters.apiKey}
+                onChange={handleInputChange}
               />
             </div>
             
@@ -88,7 +83,8 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
                 id="serial" 
                 name="serial" 
                 placeholder="Rechercher par numéro de série" 
-                defaultValue={filters.serial} 
+                value={filters.serial}
+                onChange={handleInputChange}
               />
             </div>
           </div>
@@ -113,19 +109,14 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
             </div>
           </div>
           
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end">
             <NuxiButton 
               type="button"
               variant="outline" 
               onClick={handleReset}
+              size="sm"
             >
-              Réinitialiser
-            </NuxiButton>
-            <NuxiButton 
-              type="submit"
-              variant="primary"
-            >
-              Filtrer
+              Réinitialiser les filtres
             </NuxiButton>
           </div>
         </form>
