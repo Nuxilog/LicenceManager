@@ -50,7 +50,6 @@ class ApiKeyService {
       if (filters.onlyExpired === 'true') {
         query += ` AND Qte <= 0`;
       }
-      // Si onlyExpired n'est pas 'true', ne pas filtrer par quantité
       
       // Filtre pour les licences inactives avec "STOP" dans la restriction
       if (filters.showInactive === 'false') {

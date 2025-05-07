@@ -26,8 +26,6 @@ function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): Api
       return false;
     }
     
-    // Si onlyExpired est false, afficher toutes les licences (ne pas filtrer par Quantity)
-    
     // Ne pas afficher les licences inactives (avec STOP dans la restriction)
     if (!filters.showInactive && license.Restriction.toLowerCase().includes('stop')) {
       return false;

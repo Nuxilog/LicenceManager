@@ -192,9 +192,9 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
                 <button 
                   type="button" 
                   className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={generateApiKey}
+                  onClick={openGoogleCloudConsole}
                 >
-                  <RefreshCw className="h-4 w-4 inline mr-1" />
+                  <ExternalLink className="h-4 w-4 inline mr-1" />
                   Générer
                 </button>
               </div>
@@ -296,21 +296,7 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
           </div>
         </div>
 
-        {/* Bouton Google Cloud Console pour générer des clés API */}
-        <div className="mb-6">
-          <NuxiButton 
-            type="button"
-            variant="outline"
-            className="inline-flex items-center text-blue-700 border-blue-500"
-            onClick={openGoogleCloudConsole}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Ouvrir Google Cloud Console pour générer une clé API
-          </NuxiButton>
-          <p className="text-sm text-gray-500 mt-2">
-            Utilisez la console Google Cloud pour générer une véritable clé API pour les services Google
-          </p>
-        </div>
+
         
         {/* Form buttons */}
         <div className="flex justify-end space-x-2">

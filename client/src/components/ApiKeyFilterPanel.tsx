@@ -100,7 +100,7 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
                 checked={filters.onlyExpired} 
                 onCheckedChange={() => handleSwitchChange('onlyExpired')} 
               />
-              <Label htmlFor="onlyExpired">Filtrer épuisés (Qté ≤ 0)</Label>
+              <Label htmlFor="onlyExpired">Afficher uniquement épuisés (Qté ≤ 0)</Label>
             </div>
             
             <div className="flex items-center space-x-2">
