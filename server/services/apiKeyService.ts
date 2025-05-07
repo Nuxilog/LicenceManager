@@ -2,7 +2,7 @@ import { executeRawQuery, describeTable } from '../db';
 import { SortConfig } from '@/types/license';
 
 class ApiKeyService {
-  private tableName = 'api';
+  private tableName = 'API'; // Nom de la table en majuscules tel qu'il existe dans la base de données
 
   // Fonction pour explorer la structure de la table
   async exploreTableStructure() {
@@ -31,33 +31,27 @@ class ApiKeyService {
       
       // Ajouter les conditions de filtrage
       if (filters.clientId) {
-        query += ` AND id_client LIKE ?`;
+        query += ` AND ID_Client LIKE ?`;
         queryParams.push(`%${filters.clientId}%`);
       }
       
       if (filters.apiKey) {
-        query += ` AND api_key LIKE ?`;
+        query += ` AND Api_Key LIKE ?`;
         queryParams.push(`%${filters.apiKey}%`);
       }
       
-      // Ne pas afficher les licences inactives si showInactive est false
-      if (!filters.showInactive) {
-        query += ` AND is_active = 1`;
-      }
-      
-      // Ne pas afficher les licences expirées si showExpired est false
-      if (!filters.showExpired) {
-        query += ` AND (expires_at IS NULL OR expires_at > NOW())`;
-      }
+      // Pour les filtres showInactive et showExpired, nous n'avons pas de colonnes directes pour ça
+      // Nous pourrions peut-être utiliser Der_Utilisation pour une logique similaire, mais pour l'instant
+      // nous ne filtrerons pas par ces critères
       
       // Ajouter le tri
       const dbColumnMap: { [key: string]: string } = {
-        'ID': 'id',
-        'ClientID': 'id_client',
-        'ApiKey': 'api_key',
-        'CreatedAt': 'created_at',
-        'ExpiresAt': 'expires_at',
-        'IsActive': 'is_active'
+        'ID': 'ID_Api',
+        'ClientID': 'ID_Client',
+        'ApiKey': 'Api_Key',
+        'Serial': 'Serial',
+        'LastUsed': 'Der_Utilisation',
+        'Quantity': 'Qte'
       };
       
       const dbColumn = dbColumnMap[sortConfig.key] || 'id';

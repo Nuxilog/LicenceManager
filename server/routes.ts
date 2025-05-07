@@ -345,6 +345,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route temporaire pour explorer les tables disponibles
+  app.get("/api/debug/tables", async (req, res) => {
+    try {
+      const { executeRawQuery } = await import('./db');
+      console.log("Listing all tables in the database...");
+      
+      // Obtenir la liste des tables dans la base de données
+      const tables = await executeRawQuery('SHOW TABLES');
+      console.log("Tables available:", tables);
+      
+      // Vérifier si la table API existe (vérifier les versions majuscules et minuscules)
+      const apiTableLowercase = await executeRawQuery('SHOW TABLES LIKE ?', ['api']);
+      const apiTableUppercase = await executeRawQuery('SHOW TABLES LIKE ?', ['API']);
+      
+      console.log("Checking 'api' (lowercase):", apiTableLowercase);
+      console.log("Checking 'API' (uppercase):", apiTableUppercase);
+      
+      const apiTableExists = 
+        (Array.isArray(apiTableLowercase) && apiTableLowercase.length > 0) ||
+        (Array.isArray(apiTableUppercase) && apiTableUppercase.length > 0);
+      
+      if (apiTableExists) {
+        // Déterminer le bon nom de table à utiliser
+        const tableName = 
+          (Array.isArray(apiTableUppercase) && apiTableUppercase.length > 0) ? 'API' : 'api';
+        
+        // Explorer la structure de la table API
+        console.log(`Table '${tableName}' exists, exploring structure...`);
+        const apiStructure = await executeRawQuery(`DESCRIBE ${tableName}`);
+        console.log(`${tableName} table structure:`, apiStructure);
+        
+        // Vérifier s'il y a des données dans la table
+        const apiData = await executeRawQuery(`SELECT * FROM ${tableName} LIMIT 1`);
+        console.log(`Sample ${tableName} data:`, apiData);
+        
+        res.json({
+          allTables: tables,
+          apiExists: true,
+          apiStructure: apiStructure,
+          apiSample: apiData
+        });
+      } else {
+        console.log("Table 'api' does not exist");
+        res.json({
+          allTables: tables,
+          apiExists: false
+        });
+      }
+    } catch (error) {
+      console.error("Error exploring database tables:", error);
+      res.status(500).json({ 
+        error: "Failed to explore database tables",
+        message: (error as Error).message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
