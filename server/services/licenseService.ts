@@ -630,3 +630,353 @@ class StudioLicenseService {
 }
 
 export const studioLicenseService = new StudioLicenseService();
+
+/**
+ * Service pour la gestion des licences NuxiSav
+ */
+class NuxiSavLicenseService {
+  private licencesTableName = 'Licences';
+  private postesTableName = 'Postes';
+  
+  /**
+   * Get NuxiSav licenses with optional filtering and sorting
+   */
+  async getLicenses(filters: NuxiSavLicenseFilters, sortConfig: SortConfig, page: number = 1, pageSize: number = 15) {
+    // Log received filters for debugging
+    console.log('Received NuxiSav filters:', JSON.stringify(filters));
+    console.log('Received sort config:', JSON.stringify(sortConfig));
+    console.log('Page:', page, 'Page size:', pageSize);
+    
+    // Calculer l'offset pour la pagination
+    const offset = (page - 1) * pageSize;
+    
+    // Build raw SQL query for Licences
+    let query = `
+      SELECT * 
+      FROM ${this.licencesTableName}
+      WHERE 1=1
+    `;
+    
+    const params: any[] = [];
+    
+    // Appliquer les filtres
+    if (filters.idClient) {
+      query += ` AND IdClient = ?`;
+      params.push(filters.idClient);
+    }
+    
+    if (filters.identifiantWeb) {
+      query += ` AND IdentifiantWeb LIKE ?`;
+      params.push(`%${filters.identifiantWeb}%`);
+    }
+    
+    if (filters.serial) {
+      query += ` AND SerialPermanente LIKE ?`;
+      params.push(`%${filters.serial}%`);
+    }
+    
+    const optionFilters = [];
+    if (filters.onlyWithAtel) optionFilters.push('Atel');
+    if (filters.onlyWithTrck) optionFilters.push('Trck');
+    if (filters.onlyWithTckWeb) optionFilters.push('TckWeb');
+    if (filters.onlyWithAud) optionFilters.push('Aud');
+    if (filters.onlyWithSdk) optionFilters.push('sdk');
+    
+    // Appliquer les filtres d'options si au moins un est sélectionné
+    if (optionFilters.length > 0) {
+      const optionConditions = optionFilters.map(option => {
+        query += ` AND Options LIKE ?`;
+        params.push(`%${option}%`);
+        return ` Options LIKE ?`;
+      });
+    }
+    
+    if (filters.hideSuspended) {
+      query += ` AND (Suspendu = 0 OR Suspendu IS NULL)`;
+    }
+    
+    // Mapper la clé de tri frontend à la colonne DB correspondante
+    const sortMap: { [key: string]: string } = {
+      'ID': 'IdLicence',
+      'IdClient': 'IdClient',
+      'IdentifiantWeb': 'IdentifiantWeb',
+      'SerialPermanente': 'SerialPermanente',
+      'NbrPermanente': 'NbrPermanente',
+      'Version': 'Version',
+      'Suspendu': 'Suspendu'
+    };
+    
+    // Appliquer le tri
+    const dbSortColumn = sortMap[sortConfig.key] || 'IdLicence';
+    console.log(`Sorting by: ${sortConfig.key} -> using DB column: ${dbSortColumn}`);
+    query += ` ORDER BY ${dbSortColumn} ${sortConfig.direction.toUpperCase()}`;
+    
+    // Appliquer la pagination
+    query += ` LIMIT ${pageSize} OFFSET ${offset}`;
+    
+    console.log('Executing SQL query: ', query);
+    console.log('With parameters:', params);
+    
+    try {
+      // Exécuter la requête pour récupérer les licences
+      const { db } = await getDb();
+      if (!db) throw new Error("Database connection not established");
+      
+      const licenses = await executeRawQuery(query, params);
+      
+      // Pour chaque licence, récupérer les postes associés
+      const licensesWithPostes = await Promise.all(
+        licenses.map(async (license: any) => {
+          const postesQuery = `
+            SELECT * FROM ${this.postesTableName}
+            WHERE IDLicence = ?
+          `;
+          const postes = await executeRawQuery(postesQuery, [license.IdLicence]);
+          
+          return {
+            ID: license.IdLicence,
+            IdClient: license.IdClient,
+            IdentifiantWeb: license.IdentifiantWeb,
+            SerialPermanente: license.SerialPermanente,
+            NbrPermanente: license.NbrPermanente,
+            Options: license.Options,
+            Version: license.Version,
+            Suspendu: license.Suspendu,
+            Postes: postes.map((poste: any) => ({
+              ID: poste.IdPoste,
+              IDLicence: poste.IDLicence,
+              Serial: poste.Serial,
+              Emprunte_PC: poste.Emprunte_PC,
+              Nom_Poste: poste.Nom_Poste,
+              Nom_Session: poste.Nom_Session,
+              Der_Utilisation: poste.Der_Utilisation,
+              Version: poste.Version,
+              Connecte: poste.Connecte
+            }))
+          };
+        })
+      );
+      
+      return licensesWithPostes;
+    } catch (error) {
+      console.error('Error fetching NuxiSav licenses:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get a single NuxiSav license by ID with its postes
+   */
+  async getLicenseById(id: number) {
+    try {
+      const { db } = await getDb();
+      if (!db) throw new Error("Database connection not established");
+      
+      // Récupérer la licence
+      const licenseQuery = `
+        SELECT * FROM ${this.licencesTableName}
+        WHERE IdLicence = ?
+      `;
+      const licenses = await executeRawQuery(licenseQuery, [id]);
+      
+      if (licenses.length === 0) {
+        return null;
+      }
+      
+      const license = licenses[0];
+      
+      // Récupérer les postes associés
+      const postesQuery = `
+        SELECT * FROM ${this.postesTableName}
+        WHERE IDLicence = ?
+      `;
+      const postes = await executeRawQuery(postesQuery, [id]);
+      
+      return {
+        ID: license.IdLicence,
+        IdClient: license.IdClient,
+        IdentifiantWeb: license.IdentifiantWeb,
+        SerialPermanente: license.SerialPermanente,
+        NbrPermanente: license.NbrPermanente,
+        Options: license.Options,
+        Version: license.Version,
+        Suspendu: license.Suspendu,
+        Postes: postes.map((poste: any) => ({
+          ID: poste.IdPoste,
+          IDLicence: poste.IDLicence,
+          Serial: poste.Serial,
+          Emprunte_PC: poste.Emprunte_PC,
+          Nom_Poste: poste.Nom_Poste,
+          Nom_Session: poste.Nom_Session,
+          Der_Utilisation: poste.Der_Utilisation,
+          Version: poste.Version,
+          Connecte: poste.Connecte
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching NuxiSav license by ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create a new NuxiSav license
+   */
+  async createLicense(licenseData: any) {
+    try {
+      const { db } = await getDb();
+      if (!db) throw new Error("Database connection not established");
+      
+      const { Postes, ...licenseFields } = licenseData;
+      
+      // Insérer la licence
+      const insertQuery = `
+        INSERT INTO ${this.licencesTableName} 
+        (IdClient, IdentifiantWeb, SerialPermanente, NbrPermanente, Options, Version, Suspendu)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      const result = await executeRawQuery(insertQuery, [
+        licenseFields.IdClient,
+        licenseFields.IdentifiantWeb,
+        licenseFields.SerialPermanente,
+        licenseFields.NbrPermanente,
+        licenseFields.Options,
+        licenseFields.Version,
+        licenseFields.Suspendu || 0
+      ]);
+      
+      const licenseId = result.insertId;
+      
+      // Créer les postes associés
+      if (Postes && Array.isArray(Postes)) {
+        await this.updatePostes(licenseId, Postes);
+      }
+      
+      // Récupérer la licence créée avec ses postes
+      return this.getLicenseById(licenseId);
+    } catch (error) {
+      console.error('Error creating NuxiSav license:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing NuxiSav license
+   */
+  async updateLicense(id: number, licenseData: any) {
+    try {
+      const { db } = await getDb();
+      if (!db) throw new Error("Database connection not established");
+      
+      const { Postes, ...licenseFields } = licenseData;
+      
+      // Mettre à jour la licence
+      const updateQuery = `
+        UPDATE ${this.licencesTableName} 
+        SET IdClient = ?, IdentifiantWeb = ?, SerialPermanente = ?, 
+            NbrPermanente = ?, Options = ?, Version = ?, Suspendu = ?
+        WHERE IdLicence = ?
+      `;
+      
+      await executeRawQuery(updateQuery, [
+        licenseFields.IdClient,
+        licenseFields.IdentifiantWeb,
+        licenseFields.SerialPermanente,
+        licenseFields.NbrPermanente,
+        licenseFields.Options,
+        licenseFields.Version,
+        licenseFields.Suspendu || 0,
+        id
+      ]);
+      
+      // Mettre à jour les postes associés
+      if (Postes && Array.isArray(Postes)) {
+        await this.updatePostes(id, Postes);
+      }
+      
+      // Récupérer la licence mise à jour avec ses postes
+      return this.getLicenseById(id);
+    } catch (error) {
+      console.error('Error updating NuxiSav license:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Mettre à jour les postes d'une licence
+   * Cette fonction gère la création, mise à jour et suppression des postes
+   */
+  private async updatePostes(licenseId: number, postes: any[]) {
+    try {
+      // Récupérer les postes existants pour cette licence
+      const existingPostesQuery = `
+        SELECT * FROM ${this.postesTableName}
+        WHERE IDLicence = ?
+      `;
+      const existingPostes = await executeRawQuery(existingPostesQuery, [licenseId]);
+      
+      const existingPosteIds = existingPostes.map((p: any) => p.IdPoste);
+      
+      // Identifier les postes à ajouter, mettre à jour, ou supprimer
+      const postesToUpdate = postes.filter(p => p.ID > 0).map(p => ({ ...p, IdPoste: p.ID }));
+      const postesToAdd = postes.filter(p => p.ID < 0 || !p.ID);
+      const posteIdsToKeep = postesToUpdate.map(p => p.IdPoste);
+      const posteIdsToDelete = existingPosteIds.filter(id => !posteIdsToKeep.includes(id));
+      
+      // Supprimer les postes qui ne sont plus nécessaires
+      if (posteIdsToDelete.length > 0) {
+        const deleteQuery = `
+          DELETE FROM ${this.postesTableName}
+          WHERE IDLicence = ? AND IdPoste IN (?)
+        `;
+        await executeRawQuery(deleteQuery, [licenseId, posteIdsToDelete]);
+      }
+      
+      // Mettre à jour les postes existants
+      for (const poste of postesToUpdate) {
+        const updatePosteQuery = `
+          UPDATE ${this.postesTableName}
+          SET Serial = ?, Emprunte_PC = ?, Nom_Poste = ?, Nom_Session = ?,
+              Der_Utilisation = ?, Version = ?, Connecte = ?
+          WHERE IdPoste = ? AND IDLicence = ?
+        `;
+        await executeRawQuery(updatePosteQuery, [
+          poste.Serial,
+          poste.Emprunte_PC,
+          poste.Nom_Poste,
+          poste.Nom_Session,
+          poste.Der_Utilisation,
+          poste.Version,
+          poste.Connecte || 0,
+          poste.IdPoste,
+          licenseId
+        ]);
+      }
+      
+      // Ajouter les nouveaux postes
+      for (const poste of postesToAdd) {
+        const insertPosteQuery = `
+          INSERT INTO ${this.postesTableName}
+          (IDLicence, Serial, Emprunte_PC, Nom_Poste, Nom_Session, Der_Utilisation, Version, Connecte)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        await executeRawQuery(insertPosteQuery, [
+          licenseId,
+          poste.Serial,
+          poste.Emprunte_PC,
+          poste.Nom_Poste,
+          poste.Nom_Session,
+          poste.Der_Utilisation,
+          poste.Version,
+          poste.Connecte || 0
+        ]);
+      }
+    } catch (error) {
+      console.error('Error updating NuxiSav postes:', error);
+      throw error;
+    }
+  }
+}
+
+export const nuxiSavLicenseService = new NuxiSavLicenseService();
