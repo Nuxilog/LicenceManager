@@ -995,11 +995,11 @@ class NuxiSavLicenseService {
         
         await executeRawQuery(updatePosteQuery, [
           poste.Serial,
-          poste.Emprunte_PC,
-          poste.Nom_Poste,
-          poste.Nom_Session,
+          poste.Emprunte_PC || "",  // Utiliser une chaîne vide au lieu de null
+          poste.Nom_Poste || "",    // Utiliser une chaîne vide au lieu de null
+          poste.Nom_Session || "",  // Utiliser une chaîne vide au lieu de null
           derUtilisation,
-          poste.Version,
+          poste.Version || "",      // Utiliser une chaîne vide au lieu de null
           poste.Connecte || 0,
           poste.IdPoste,
           licenseId
@@ -1028,11 +1028,11 @@ class NuxiSavLicenseService {
         await executeRawQuery(insertPosteQuery, [
           licenseId,
           poste.Serial,
-          poste.Emprunte_PC,
-          poste.Nom_Poste,
-          poste.Nom_Session,
+          poste.Emprunte_PC || "",  // Utiliser une chaîne vide au lieu de null
+          poste.Nom_Poste || "",    // Utiliser une chaîne vide au lieu de null
+          poste.Nom_Session || "",  // Utiliser une chaîne vide au lieu de null
           derUtilisation,
-          poste.Version,
+          poste.Version || "",      // Utiliser une chaîne vide au lieu de null
           poste.Connecte || 0
         ]);
       }

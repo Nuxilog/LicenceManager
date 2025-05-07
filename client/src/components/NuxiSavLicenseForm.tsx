@@ -98,13 +98,14 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
   const handleReleasePost = (poste: NuxiSavPoste) => {
     if (!editedLicense) return;
     
+    // Utilisons des chaînes vides au lieu de null pour être sûr que la base de données les traite correctement
     const updatedPoste = {
       ...poste,
-      Emprunte_PC: null,
-      Nom_Poste: null,
-      Nom_Session: null,
-      Der_Utilisation: null,
-      Version: null,
+      Emprunte_PC: "",
+      Nom_Poste: "",
+      Nom_Session: "",
+      Der_Utilisation: null, // null est correct pour les dates
+      Version: "",
       Connecte: 0
     };
     
@@ -117,6 +118,10 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
       ...editedLicense,
       Postes: updatedPostes
     });
+    
+    // Modification immédiate sans attendre d'appuyer sur Enregistrer
+    // (Décommentez cette ligne si vous souhaitez que le bouton Libérer sauvegarde automatiquement)
+    // handleSubmit(new Event('submit') as React.FormEvent);
   };
 
   // Fonction pour mettre à jour le nombre de postes
