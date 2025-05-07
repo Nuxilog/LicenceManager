@@ -45,7 +45,7 @@ export default function StudioLicenseTable({
   // Rendere le badge pour un module activé
   const renderModuleBadge = (isEnabled: number, label: string) => {
     if (isEnabled) {
-      return <Badge variant="default" className="bg-blue-600 hover:bg-blue-700 px-1.5 py-0 text-xs">{label}</Badge>;
+      return <Badge variant="default" className="bg-[#36599E] hover:bg-[#0A2A69] px-1.5 py-0 text-xs">{label}</Badge>;
     }
     return null;
   };
