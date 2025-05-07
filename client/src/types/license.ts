@@ -60,6 +60,13 @@ export interface StudioLicenseFilters {
   hideSuspended?: boolean;
 }
 
+export interface ApiKeyLicenseFilters {
+  clientId?: string;
+  apiKey?: string;
+  showExpired?: boolean;
+  showInactive?: boolean;
+}
+
 export interface SortConfig {
   key: string;
   direction: 'asc' | 'desc';
@@ -75,4 +82,14 @@ export interface StudioLicense {
   PagePerso: number;
   WDE: number;
   Suspendu: number;
+}
+
+export interface ApiKeyLicense {
+  ID: number;
+  ClientID: number;
+  ApiKey: string;
+  Description: string | null;
+  CreatedAt: string;
+  ExpiresAt: string | null;
+  IsActive: number;
 }
