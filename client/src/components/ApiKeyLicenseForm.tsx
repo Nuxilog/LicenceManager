@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { ApiKeyLicense } from "@/types/license";
 import { format } from "date-fns";
-import { Copy, RefreshCw, ExternalLink } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateSerial } from "@/lib/licenseUtils";
 
@@ -121,11 +121,6 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
     });
   };
 
-  // Ouvrir Google Cloud Console pour générer une véritable clé API
-  const openGoogleCloudConsole = () => {
-    window.open("https://console.cloud.google.com/apis/credentials?inv=1&invt=Abwt5A&project=test-interne-uniquement&pli=1", "_blank");
-  };
-
   return (
     <Card className="p-6">
       <form ref={formRef} onSubmit={handleSubmit}>
@@ -188,14 +183,6 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
                 >
                   <Copy className="h-4 w-4 inline mr-1" />
                   Copier
-                </button>
-                <button 
-                  type="button" 
-                  className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={openGoogleCloudConsole}
-                >
-                  <ExternalLink className="h-4 w-4 inline mr-1" />
-                  Générer
                 </button>
               </div>
             </Label>
