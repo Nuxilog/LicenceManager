@@ -635,8 +635,8 @@ export const studioLicenseService = new StudioLicenseService();
  * Service pour la gestion des licences NuxiSav
  */
 class NuxiSavLicenseService {
-  private licencesTableName = 'Licences';
-  private postesTableName = 'Postes';
+  private licencesTableName = 'licences';
+  private postesTableName = 'postes';
   
   /**
    * Get NuxiSav licenses with optional filtering and sorting

@@ -455,6 +455,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour explorer les tables Licences et Postes
+  app.get("/api/debug/nuxisav-tables", async (req, res) => {
+    try {
+      const { executeRawQuery } = await import('./db');
+      console.log("Examining NuxiSav related tables...");
+      
+      // Vérifier les tables Licences et Postes (en testant différentes variations de casse)
+      const licencesVariants = ['licences', 'Licences', 'LICENCES', 'licences2'];
+      const postesVariants = ['postes', 'Postes', 'POSTES'];
+      
+      let licencesTableName = null;
+      let postesTableName = null;
+      
+      // Trouver le bon nom pour la table des licences
+      for (const variant of licencesVariants) {
+        const result = await executeRawQuery('SHOW TABLES LIKE ?', [variant]);
+        if (Array.isArray(result) && result.length > 0) {
+          licencesTableName = variant;
+          console.log(`Found licences table as: ${licencesTableName}`);
+          break;
+        }
+      }
+      
+      // Trouver le bon nom pour la table des postes
+      for (const variant of postesVariants) {
+        const result = await executeRawQuery('SHOW TABLES LIKE ?', [variant]);
+        if (Array.isArray(result) && result.length > 0) {
+          postesTableName = variant;
+          console.log(`Found postes table as: ${postesTableName}`);
+          break;
+        }
+      }
+      
+      const results: any = {
+        licencesTableFound: !!licencesTableName,
+        postesTableFound: !!postesTableName
+      };
+      
+      // Explorer la structure des tables si elles existent
+      if (licencesTableName) {
+        const licencesStructure = await executeRawQuery(`DESCRIBE ${licencesTableName}`);
+        console.log(`${licencesTableName} table structure:`, licencesStructure);
+        results.licencesStructure = licencesStructure;
+        
+        // Récupérer un exemple de données
+        const licencesSample = await executeRawQuery(`SELECT * FROM ${licencesTableName} LIMIT 1`);
+        console.log(`Sample ${licencesTableName} data:`, licencesSample);
+        results.licencesSample = licencesSample;
+      }
+      
+      if (postesTableName) {
+        const postesStructure = await executeRawQuery(`DESCRIBE ${postesTableName}`);
+        console.log(`${postesTableName} table structure:`, postesStructure);
+        results.postesStructure = postesStructure;
+      }
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error examining NuxiSav tables:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to examine NuxiSav tables" });
+    }
+  });
+
   // Route temporaire pour explorer les tables disponibles
   app.get("/api/debug/tables", async (req, res) => {
     try {
