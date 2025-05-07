@@ -41,34 +41,26 @@ export default function ApiKeyLicenseTable({
     }
   };
 
-  // Check if a key is expired
-  const isExpired = (expiryDate: string | null): boolean => {
-    if (!expiryDate) return false;
-    try {
-      return new Date(expiryDate) < new Date();
-    } catch (error) {
-      return false;
-    }
+  // Verify if an API key has a restriction
+  const hasRestriction = (restriction: string): boolean => {
+    return restriction.trim().length > 0;
   };
 
-  // Render the expiry status of the API key
-  const renderExpiryStatus = (expiryDate: string | null): JSX.Element => {
-    if (!expiryDate) {
-      return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Sans expiration</Badge>;
+  // Render the status of the API key based on Quantity and Restriction
+  const renderApiKeyStatus = (quantity: number, restriction: string): JSX.Element => {
+    if (hasRestriction(restriction)) {
+      // Si la restriction contient "stop" ou "impay", c'est probablement une clé suspendue
+      if (restriction.toLowerCase().includes('stop') || restriction.toLowerCase().includes('impay')) {
+        return <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Suspendue</Badge>;
+      }
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Restreinte</Badge>;
     }
     
-    if (isExpired(expiryDate)) {
-      return <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Expirée</Badge>;
+    if (quantity < 0) {
+      return <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Épuisée</Badge>;
     }
     
-    return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Valide</Badge>;
-  };
-
-  // Render the active status of the API key
-  const renderActiveStatus = (isActive: number): JSX.Element => {
-    return isActive ? 
-      <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge> :
-      <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Inactive</Badge>;
+    return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
   };
 
   return (
@@ -100,41 +92,41 @@ export default function ApiKeyLicenseTable({
                   )}
                 </div>
               </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => onSort("Serial")}
+              >
+                <div className="flex items-center">
+                  Serial
+                  {sortConfig.key === "Serial" && (
+                    <ArrowUpDown className={`ml-1 h-4 w-4 ${sortConfig.direction === "asc" ? "transform rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
               <TableHead>Clé API</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer"
-                onClick={() => onSort("CreatedAt")}
+                onClick={() => onSort("Quantity")}
               >
                 <div className="flex items-center">
-                  Date de création
-                  {sortConfig.key === "CreatedAt" && (
+                  Quantité
+                  {sortConfig.key === "Quantity" && (
                     <ArrowUpDown className={`ml-1 h-4 w-4 ${sortConfig.direction === "asc" ? "transform rotate-180" : ""}`} />
                   )}
                 </div>
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
-                onClick={() => onSort("ExpiresAt")}
+                onClick={() => onSort("LastUsed")}
               >
                 <div className="flex items-center">
-                  Expiration
-                  {sortConfig.key === "ExpiresAt" && (
+                  Dernière utilisation
+                  {sortConfig.key === "LastUsed" && (
                     <ArrowUpDown className={`ml-1 h-4 w-4 ${sortConfig.direction === "asc" ? "transform rotate-180" : ""}`} />
                   )}
                 </div>
               </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => onSort("IsActive")}
-              >
-                <div className="flex items-center">
-                  Statut
-                  {sortConfig.key === "IsActive" && (
-                    <ArrowUpDown className={`ml-1 h-4 w-4 ${sortConfig.direction === "asc" ? "transform rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
+              <TableHead>Statut</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,21 +161,20 @@ export default function ApiKeyLicenseTable({
                 <TableCell className="font-medium py-2">{license.ID}</TableCell>
                 <TableCell className="py-2">{license.ClientID}</TableCell>
                 <TableCell className="py-2">
+                  <div className="font-mono text-sm">
+                    {license.Serial}
+                  </div>
+                </TableCell>
+                <TableCell className="py-2">
                   <div className="font-mono text-sm max-w-[200px] truncate">
                     {license.ApiKey}
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
-                  {license.Description || "N/A"}
+                  {license.Quantity.toLocaleString('fr-FR')}
                 </TableCell>
-                <TableCell className="py-2">{formatDate(license.CreatedAt)}</TableCell>
-                <TableCell className="py-2">
-                  <div className="flex items-center space-x-2">
-                    <span>{license.ExpiresAt ? formatDate(license.ExpiresAt) : "Sans expiration"}</span>
-                    {renderExpiryStatus(license.ExpiresAt)}
-                  </div>
-                </TableCell>
-                <TableCell className="py-2">{renderActiveStatus(license.IsActive)}</TableCell>
+                <TableCell className="py-2">{formatDate(license.LastUsed)}</TableCell>
+                <TableCell className="py-2">{renderApiKeyStatus(license.Quantity, license.Restriction)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

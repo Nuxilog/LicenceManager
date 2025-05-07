@@ -21,12 +21,10 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [localLicense, setLocalLicense] = useState<ApiKeyLicense | null>(license);
-  const [hasExpiry, setHasExpiry] = useState<boolean>(!!license?.ExpiresAt);
-
+  
   // Reset the form when a new license is selected
   if (license && license.ID !== localLicense?.ID) {
     setLocalLicense(license);
-    setHasExpiry(!!license.ExpiresAt);
   }
 
   if (!localLicense) return null;
@@ -82,10 +80,18 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
       return;
     }
 
+    if (!localLicense.Serial) {
+      toast({
+        title: "Erreur",
+        description: "Le numéro de série est requis",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Update the license with the form data
     const updatedLicense: ApiKeyLicense = {
-      ...localLicense,
-      ExpiresAt: hasExpiry ? localLicense.ExpiresAt : null,
+      ...localLicense
     };
 
     onSave(updatedLicense);
@@ -94,13 +100,31 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
   const handleCancel = () => {
     // Reset to the original license
     setLocalLicense(license);
-    setHasExpiry(!!license?.ExpiresAt);
+  };
+
+  // Generate a new Serial
+  const generateNewSerial = () => {
+    const newSerial = generateSerial();
+    setLocalLicense(prev => {
+      if (!prev) return null;
+      return { ...prev, Serial: newSerial };
+    });
+  };
+
+  // Generate a new API Key V5
+  const generateApiKeyV5 = () => {
+    // Generate a longer key for V5
+    const keyV5 = generateSerial() + "-" + generateSerial() + "-" + generateSerial() + "-" + generateSerial();
+    setLocalLicense(prev => {
+      if (!prev) return null;
+      return { ...prev, ApiKeyV5: keyV5 };
+    });
   };
 
   return (
     <Card className="p-6">
       <form ref={formRef} onSubmit={handleSubmit}>
-        {/* First row: Client ID and API Key */}
+        {/* First row: Client ID and Serial */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">
             <Label htmlFor="clientId">ID Client</Label>
@@ -113,6 +137,41 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
             />
           </div>
           
+          <div className="space-y-2">
+            <Label htmlFor="serial" className="flex justify-between">
+              <span>Numéro de série</span>
+              <div className="space-x-2">
+                <button 
+                  type="button" 
+                  className="text-blue-600 hover:text-blue-800 text-xs"
+                  onClick={() => handleCopy(localLicense.Serial)}
+                >
+                  <Copy className="h-4 w-4 inline mr-1" />
+                  Copier
+                </button>
+                <button 
+                  type="button" 
+                  className="text-blue-600 hover:text-blue-800 text-xs"
+                  onClick={generateSerial}
+                >
+                  <RefreshCw className="h-4 w-4 inline mr-1" />
+                  Générer
+                </button>
+              </div>
+            </Label>
+            <Input 
+              id="serial" 
+              name="serial" 
+              value={localLicense.Serial}
+              onChange={(e) => setLocalLicense({...localLicense, Serial: e.target.value})}
+              className="font-mono"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Second row: API Key and API Key V5 */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">
             <Label htmlFor="apiKey" className="flex justify-between">
               <span>Clé API</span>
@@ -144,76 +203,92 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
               required
             />
           </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="apiKeyV5" className="flex justify-between">
+              <span>Clé API V5</span>
+              <div className="space-x-2">
+                <button 
+                  type="button" 
+                  className="text-blue-600 hover:text-blue-800 text-xs"
+                  onClick={() => handleCopy(localLicense.ApiKeyV5)}
+                >
+                  <Copy className="h-4 w-4 inline mr-1" />
+                  Copier
+                </button>
+                <button 
+                  type="button" 
+                  className="text-blue-600 hover:text-blue-800 text-xs"
+                  onClick={generateApiKeyV5}
+                >
+                  <RefreshCw className="h-4 w-4 inline mr-1" />
+                  Générer
+                </button>
+              </div>
+            </Label>
+            <Input 
+              id="apiKeyV5" 
+              name="apiKeyV5" 
+              value={localLicense.ApiKeyV5}
+              onChange={(e) => setLocalLicense({...localLicense, ApiKeyV5: e.target.value})}
+              className="font-mono"
+              required
+            />
+          </div>
         </div>
 
-        {/* Second row: Description and Expiry */}
+        {/* Third row: Quantity and Last Used */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea 
-              id="description" 
-              name="description" 
-              value={localLicense.Description || ""}
-              onChange={(e) => setLocalLicense({...localLicense, Description: e.target.value})}
-              placeholder="Description de l'utilisation de cette clé API"
-              className="h-24"
+            <Label htmlFor="quantity">Quantité</Label>
+            <Input 
+              id="quantity" 
+              name="quantity" 
+              type="number"
+              value={localLicense.Quantity}
+              onChange={(e) => setLocalLicense({...localLicense, Quantity: parseInt(e.target.value) || 0})}
+              required
             />
+            <p className="text-sm text-gray-500">
+              Nombre d'appels API restants pour cette clé
+            </p>
           </div>
           
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="hasExpiry">Date d'expiration</Label>
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="hasExpiry" 
-                  checked={hasExpiry} 
-                  onCheckedChange={(checked) => {
-                    setHasExpiry(checked);
-                    if (!checked) {
-                      setLocalLicense({...localLicense, ExpiresAt: null});
-                    } else if (!localLicense.ExpiresAt) {
-                      // Set default expiry to 1 year from now
-                      const oneYearFromNow = new Date();
-                      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-                      setLocalLicense({...localLicense, ExpiresAt: oneYearFromNow.toISOString()});
-                    }
-                  }}
-                />
-                <Label htmlFor="hasExpiry" className="text-sm">Activer expiration</Label>
-              </div>
-            </div>
-            {hasExpiry && (
-              <Input 
-                type="datetime-local" 
-                id="expiresAt" 
-                name="expiresAt" 
-                value={formatDateForInput(localLicense.ExpiresAt)}
-                onChange={(e) => {
-                  const date = e.target.value ? new Date(e.target.value) : null;
-                  setLocalLicense({...localLicense, ExpiresAt: date ? date.toISOString() : null});
-                }}
-              />
-            )}
+          <div className="space-y-2">
+            <Label htmlFor="lastUsed">Dernière utilisation</Label>
+            <Input 
+              id="lastUsed" 
+              name="lastUsed" 
+              type="datetime-local"
+              value={formatDateForInput(localLicense.LastUsed)}
+              onChange={(e) => {
+                const date = e.target.value ? new Date(e.target.value) : new Date();
+                setLocalLicense({...localLicense, LastUsed: date.toISOString()});
+              }}
+              disabled
+            />
+            <p className="text-sm text-gray-500">
+              Date de la dernière utilisation de cette clé (mise à jour automatiquement)
+            </p>
           </div>
         </div>
 
-        {/* Third row: Status */}
+        {/* Fourth row: Restriction */}
         <div className="mb-6">
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="isActive" 
-              checked={!!localLicense.IsActive} 
-              onCheckedChange={(checked) => {
-                setLocalLicense({...localLicense, IsActive: checked ? 1 : 0});
-              }}
+          <div className="space-y-2">
+            <Label htmlFor="restriction">Restrictions</Label>
+            <Textarea 
+              id="restriction" 
+              name="restriction" 
+              value={localLicense.Restriction}
+              onChange={(e) => setLocalLicense({...localLicense, Restriction: e.target.value})}
+              placeholder="Restrictions éventuelles pour cette clé API (ex: 'impayé', 'stop', etc.)"
+              className="h-24"
             />
-            <Label htmlFor="isActive">Clé active</Label>
+            <p className="text-sm text-gray-500">
+              Laissez vide pour une clé sans restriction, ou ajoutez des mots-clés comme "stop" ou "impayé" pour suspendre la clé
+            </p>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            {localLicense.IsActive ? 
-              "Cette clé API est actuellement active et peut être utilisée pour les requêtes." : 
-              "Cette clé API est inactive et ne peut pas être utilisée pour les requêtes."}
-          </p>
         </div>
 
         {/* Form buttons */}

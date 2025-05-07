@@ -87,9 +87,10 @@ export interface StudioLicense {
 export interface ApiKeyLicense {
   ID: number;
   ClientID: number;
+  Serial: string;
   ApiKey: string;
-  Description: string | null;
-  CreatedAt: string;
-  ExpiresAt: string | null;
-  IsActive: number;
+  ApiKeyV5: string;
+  Quantity: number;
+  LastUsed: string;
+  Restriction: string;
 }
