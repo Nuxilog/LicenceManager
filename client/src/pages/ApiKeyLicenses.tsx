@@ -131,7 +131,7 @@ export default function ApiKeyLicenses() {
       <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-lg mb-6">
         <h2 className="text-lg font-semibold text-cyan-800 mb-2">Licences API Key</h2>
         <p className="text-sm text-cyan-700">
-          Cette section permet de gérer les clés API pour l'accès programmatique aux services Nuxi.
+          Cette section permet de gérer les clés API Google pour l'accès au géocodage et à la carte Google Maps sous Windows.
         </p>
       </div>
       
