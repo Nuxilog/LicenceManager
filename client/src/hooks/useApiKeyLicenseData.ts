@@ -102,20 +102,32 @@ function applyPagination(data: ApiKeyLicense[], page: number, pageSize: number):
 export function useApiKeyLicenseData(filters: ApiKeyLicenseFilters, sortConfig: SortConfig, page: number = 1, pageSize: number = 15) {
   const [error, setError] = useState<Error | null>(null);
 
-  // Simulation de la requête API (à remplacer par une vraie requête API quand l'API sera prête)
+  // Utilisation de la véritable API
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['/api/apikey-licenses', filters, sortConfig, page, pageSize],
     queryFn: async () => {
       try {
-        // Simulation d'un délai réseau
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Construire l'URL avec les paramètres de requête
+        const params = new URLSearchParams();
+        if (filters.clientId) params.append('clientId', filters.clientId);
+        if (filters.apiKey) params.append('apiKey', filters.apiKey);
+        params.append('showExpired', filters.showExpired ? 'true' : 'false');
+        params.append('showInactive', filters.showInactive ? 'true' : 'false');
+        params.append('sortBy', sortConfig.key);
+        params.append('sortDirection', sortConfig.direction);
+        params.append('page', page.toString());
+        params.append('pageSize', pageSize.toString());
         
-        // Application des filtres, tri et pagination aux données mockées
-        let filteredData = applyFilters(mockApiKeyLicenses, filters);
-        let sortedData = applySorting(filteredData, sortConfig);
-        let paginatedData = applyPagination(sortedData, page, pageSize);
+        // Effectuer la requête au backend
+        const response = await fetch(`/api/apikey-licenses?${params.toString()}`);
         
-        return paginatedData;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erreur lors de la récupération des licences API Key');
+        }
+        
+        const data = await response.json();
+        return data;
       } catch (err) {
         setError(err as Error);
         throw err;
@@ -123,17 +135,24 @@ export function useApiKeyLicenseData(filters: ApiKeyLicenseFilters, sortConfig: 
     }
   });
 
-  // Mutation pour créer une nouvelle licence (simulée)
+  // Mutation pour créer une nouvelle licence
   const { mutateAsync: createLicense } = useMutation({
     mutationFn: async (newLicense: ApiKeyLicense) => {
-      // Simulation d'un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Faire une requête POST vers l'endpoint approprié
+      const response = await fetch('/api/apikey-licenses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newLicense),
+      });
       
-      // Dans une vraie API, nous enverrions une requête POST avec newLicense
-      console.log('Creating new API key license:', newLicense);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la création de la licence API Key');
+      }
       
-      // Simuler un succès
-      return { ...newLicense, ID: Math.floor(Math.random() * 1000) + 100 };
+      return await response.json();
     },
     onSuccess: () => {
       // Invalider le cache pour recharger les données
@@ -141,17 +160,24 @@ export function useApiKeyLicenseData(filters: ApiKeyLicenseFilters, sortConfig: 
     }
   });
 
-  // Mutation pour mettre à jour une licence existante (simulée)
+  // Mutation pour mettre à jour une licence existante
   const { mutateAsync: updateLicense } = useMutation({
     mutationFn: async (updatedLicense: ApiKeyLicense) => {
-      // Simulation d'un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Faire une requête PUT vers l'endpoint approprié
+      const response = await fetch(`/api/apikey-licenses/${updatedLicense.ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedLicense),
+      });
       
-      // Dans une vraie API, nous enverrions une requête PUT avec updatedLicense
-      console.log('Updating API key license:', updatedLicense);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la mise à jour de la licence API Key');
+      }
       
-      // Simuler un succès
-      return updatedLicense;
+      return await response.json();
     },
     onSuccess: () => {
       // Invalider le cache pour recharger les données
