@@ -77,14 +77,16 @@ class ApiKeyService {
       }
       
       // Transformer les résultats pour correspondre au format attendu par le frontend
-      return results.map((row: any) => ({
-        ID: row.id,
-        ClientID: row.id_client,
-        ApiKey: row.api_key,
-        Description: row.description,
-        CreatedAt: row.created_at,
-        ExpiresAt: row.expires_at,
-        IsActive: row.is_active
+      // Utilisation d'une assertion de type pour éviter les erreurs TypeScript
+      return (results as any[]).map((row) => ({
+        ID: row.ID_Api,
+        ClientID: row.ID_Client,
+        Serial: row.Serial,
+        ApiKey: row.Api_Key,
+        ApiKeyV5: row.Api_Key_V5,
+        Quantity: row.Qte,
+        LastUsed: row.Der_Utilisation,
+        Restriction: row.Restriction
       }));
       
     } catch (error) {
@@ -96,7 +98,7 @@ class ApiKeyService {
   // Récupérer une licence par son ID
   async getLicenseById(id: number) {
     try {
-      const query = `SELECT * FROM ${this.tableName} WHERE id = ?`;
+      const query = `SELECT * FROM ${this.tableName} WHERE ID_Api = ?`;
       const results = await executeRawQuery(query, [id]);
       
       // Vérifier si les résultats sont un tableau
@@ -104,15 +106,17 @@ class ApiKeyService {
         return null;
       }
       
-      const row = results[0];
+      // Effectuer une assertion de type pour éviter les erreurs TypeScript
+      const row = results[0] as any;
       return {
-        ID: row.id,
-        ClientID: row.id_client,
-        ApiKey: row.api_key,
-        Description: row.description,
-        CreatedAt: row.created_at,
-        ExpiresAt: row.expires_at,
-        IsActive: row.is_active
+        ID: row.ID_Api,
+        ClientID: row.ID_Client,
+        Serial: row.Serial,
+        ApiKey: row.Api_Key,
+        ApiKeyV5: row.Api_Key_V5,
+        Quantity: row.Qte,
+        LastUsed: row.Der_Utilisation,
+        Restriction: row.Restriction
       };
       
     } catch (error) {
@@ -126,16 +130,17 @@ class ApiKeyService {
     try {
       const query = `
         INSERT INTO ${this.tableName} 
-        (id_client, api_key, description, created_at, expires_at, is_active) 
-        VALUES (?, ?, ?, NOW(), ?, ?)
+        (ID_Client, Serial, Api_Key, Api_Key_V5, Qte, Restriction) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `;
       
       const params = [
         licenseData.ClientID,
+        licenseData.Serial || licenseData.Serial,
         licenseData.ApiKey,
-        licenseData.Description,
-        licenseData.ExpiresAt,
-        licenseData.IsActive
+        licenseData.ApiKeyV5 || '',
+        licenseData.Quantity || 0,
+        licenseData.Restriction || ''
       ];
       
       const result = await executeRawQuery(query, params);
@@ -164,20 +169,22 @@ class ApiKeyService {
     try {
       const query = `
         UPDATE ${this.tableName} 
-        SET id_client = ?, 
-            api_key = ?, 
-            description = ?, 
-            expires_at = ?, 
-            is_active = ? 
-        WHERE id = ?
+        SET ID_Client = ?, 
+            Serial = ?, 
+            Api_Key = ?, 
+            Api_Key_V5 = ?, 
+            Qte = ?, 
+            Restriction = ? 
+        WHERE ID_Api = ?
       `;
       
       const params = [
         licenseData.ClientID,
+        licenseData.Serial,
         licenseData.ApiKey,
-        licenseData.Description,
-        licenseData.ExpiresAt,
-        licenseData.IsActive,
+        licenseData.ApiKeyV5 || '',
+        licenseData.Quantity || 0,
+        licenseData.Restriction || '',
         id
       ];
       
