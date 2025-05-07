@@ -59,16 +59,19 @@ export default function ApiKeyLicenses() {
   const handleCreateNew = () => {
     // Créer une nouvelle licence API Key avec une clé générée automatiquement
     const apiKey = generateSerial() + "-" + generateSerial() + "-" + generateSerial();
+    const apiKeyV5 = generateSerial() + "-" + generateSerial() + "-" + generateSerial() + "-" + generateSerial();
+    const serial = generateSerial();
     const currentDate = new Date().toISOString();
     
     const emptyLicense: ApiKeyLicense = {
       ID: 0,
       ClientID: 0,
+      Serial: serial,
       ApiKey: apiKey,
-      Description: null,
-      CreatedAt: currentDate,
-      ExpiresAt: null,
-      IsActive: 1
+      ApiKeyV5: apiKeyV5,
+      Quantity: 1000, // Valeur par défaut, typiquement un crédit de 1000 appels
+      LastUsed: currentDate,
+      Restriction: ""
     };
     
     setSelectedLicense(emptyLicense);

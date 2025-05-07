@@ -3,38 +3,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ApiKeyLicense, ApiKeyLicenseFilters, SortConfig } from "@/types/license";
 
-// Fonction pour simuler des données de licences API Key pendant le développement
-const mockApiKeyLicenses: ApiKeyLicense[] = [
-  {
-    ID: 1,
-    ClientID: 1001,
-    ApiKey: "B24G-9FCD-5F9F-ECE2-HHD2-ABC1-DEF2-GHI3",
-    Description: "API pour l'intégration avec le système CRM",
-    CreatedAt: new Date(2023, 5, 15).toISOString(),
-    ExpiresAt: new Date(2024, 5, 15).toISOString(),
-    IsActive: 1
-  },
-  {
-    ID: 2,
-    ClientID: 1002,
-    ApiKey: "X7YZ-1ABC-2DEF-3GHI-4JKL-5MNO-6PQR-7STU",
-    Description: "API pour le service de facturation",
-    CreatedAt: new Date(2023, 3, 10).toISOString(),
-    ExpiresAt: null,
-    IsActive: 1
-  },
-  {
-    ID: 3,
-    ClientID: 1003,
-    ApiKey: "AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH",
-    Description: "Accès en lecture seule aux données clients",
-    CreatedAt: new Date(2022, 11, 5).toISOString(),
-    ExpiresAt: new Date(2023, 11, 5).toISOString(), // Date expirée
-    IsActive: 0
-  }
-];
+// Nous n'utilisons plus de données mockées maintenant que nous avons l'API réelle
 
-// Cette fonction simule l'application des filtres aux données mockées
+// Fonction pour appliquer les filtres aux données API
 function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): ApiKeyLicense[] {
   return data.filter(license => {
     // Filtrage par Client ID
@@ -47,13 +18,13 @@ function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): Api
       return false;
     }
     
-    // Ne pas afficher les licences expirées si showExpired est false
-    if (!filters.showExpired && license.ExpiresAt && new Date(license.ExpiresAt) < new Date()) {
+    // Filtres supplémentaires spécifiques à la table API
+    // Par exemple, filtre sur Restriction ou Quantity
+    if (!filters.showInactive && license.Restriction.toLowerCase().includes('stop')) {
       return false;
     }
     
-    // Ne pas afficher les licences inactives si showInactive est false
-    if (!filters.showInactive && !license.IsActive) {
+    if (!filters.showExpired && license.Quantity <= 0) {
       return false;
     }
     
@@ -61,7 +32,7 @@ function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): Api
   });
 }
 
-// Cette fonction simule le tri des données
+// Fonction pour trier les données API
 function applySorting(data: ApiKeyLicense[], sortConfig: SortConfig): ApiKeyLicense[] {
   return [...data].sort((a, b) => {
     const aValue = a[sortConfig.key as keyof ApiKeyLicense];
@@ -73,7 +44,7 @@ function applySorting(data: ApiKeyLicense[], sortConfig: SortConfig): ApiKeyLice
     if (bValue == null) return -1;
     
     // Pour les dates, convertir en objets Date
-    if (typeof aValue === 'string' && (sortConfig.key === 'CreatedAt' || sortConfig.key === 'ExpiresAt')) {
+    if (typeof aValue === 'string' && sortConfig.key === 'LastUsed') {
       const dateA = aValue ? new Date(aValue).getTime() : 0;
       const dateB = bValue as string ? new Date(bValue as string).getTime() : 0;
       return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;

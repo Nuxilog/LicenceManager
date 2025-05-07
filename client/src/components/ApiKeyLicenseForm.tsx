@@ -102,8 +102,8 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
     setLocalLicense(license);
   };
 
-  // Generate a new Serial
-  const generateNewSerial = () => {
+  // Generate a new Serial for the license
+  const createNewSerial = () => {
     const newSerial = generateSerial();
     setLocalLicense(prev => {
       if (!prev) return null;
@@ -152,7 +152,7 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
                 <button 
                   type="button" 
                   className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={generateSerial}
+                  onClick={createNewSerial}
                 >
                   <RefreshCw className="h-4 w-4 inline mr-1" />
                   Générer
