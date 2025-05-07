@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 // Pas besoin d'importer db car il n'est pas utilisé
-import { nuxiDevLicenseService, studioLicenseService } from "./services/licenseService";
+import { nuxiDevLicenseService, studioLicenseService, nuxiSavLicenseService } from "./services/licenseService";
 import { apiKeyService } from "./services/apiKeyService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -342,6 +342,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating API key license:", error);
       res.status(500).json({ message: (error as Error).message || "Failed to update API key license" });
+    }
+  });
+
+  // NuxiSav licenses routes
+  app.get("/api/nuxisav-licenses", async (req, res) => {
+    try {
+      const { 
+        idClient, 
+        identifiantWeb, 
+        serial, 
+        onlyWithAtel,
+        onlyWithTrck,
+        onlyWithTckWeb,
+        onlyWithAud,
+        onlyWithSdk,
+        hideSuspended,
+        sortKey = "ID",
+        sortDirection = "desc",
+        page = "1",
+        pageSize = "15"
+      } = req.query as Record<string, string>;
+      
+      const filters = {
+        idClient,
+        identifiantWeb,
+        serial,
+        onlyWithAtel: onlyWithAtel === "true",
+        onlyWithTrck: onlyWithTrck === "true",
+        onlyWithTckWeb: onlyWithTckWeb === "true",
+        onlyWithAud: onlyWithAud === "true",
+        onlyWithSdk: onlyWithSdk === "true",
+        hideSuspended: hideSuspended === "true"
+      };
+      
+      const pageNum = parseInt(page, 10) || 1;
+      const pageSizeNum = parseInt(pageSize, 10) || 15;
+      
+      const licenses = await nuxiSavLicenseService.getLicenses(
+        filters, 
+        { key: sortKey, direction: sortDirection as "asc" | "desc" },
+        pageNum,
+        pageSizeNum
+      );
+      
+      res.json(licenses);
+    } catch (error) {
+      console.error("Error fetching NuxiSav licenses:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to fetch NuxiSav licenses" });
+    }
+  });
+
+  app.get("/api/nuxisav-licenses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid NuxiSav license ID" });
+      }
+      
+      const license = await nuxiSavLicenseService.getLicenseById(id);
+      
+      if (!license) {
+        return res.status(404).json({ message: "NuxiSav license not found" });
+      }
+      
+      res.json(license);
+    } catch (error) {
+      console.error("Error fetching NuxiSav license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to fetch NuxiSav license" });
+    }
+  });
+
+  app.post("/api/nuxisav-licenses", async (req, res) => {
+    try {
+      const licenseData = req.body;
+      
+      // Validate required fields
+      if (licenseData.IdClient === undefined) {
+        return res.status(400).json({ message: "IdClient is required" });
+      }
+      
+      const newLicense = await nuxiSavLicenseService.createLicense(licenseData);
+      
+      res.status(201).json(newLicense);
+    } catch (error) {
+      console.error("Error creating NuxiSav license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to create NuxiSav license" });
+    }
+  });
+
+  app.put("/api/nuxisav-licenses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid NuxiSav license ID" });
+      }
+      
+      const licenseData = req.body;
+      
+      // Check if license exists
+      const existingLicense = await nuxiSavLicenseService.getLicenseById(id);
+      if (!existingLicense) {
+        return res.status(404).json({ message: "NuxiSav license not found" });
+      }
+      
+      const updatedLicense = await nuxiSavLicenseService.updateLicense(id, licenseData);
+      
+      res.json(updatedLicense);
+    } catch (error) {
+      console.error("Error updating NuxiSav license:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to update NuxiSav license" });
     }
   });
 

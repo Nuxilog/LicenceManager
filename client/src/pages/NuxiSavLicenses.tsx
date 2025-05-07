@@ -1,14 +1,154 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import LicenseNavigation from "@/components/LicenseNavigation";
+import NuxiSavFilterPanel from "@/components/NuxiSavFilterPanel";
+import NuxiSavLicenseTable from "@/components/NuxiSavLicenseTable";
+import NuxiSavLicenseForm from "@/components/NuxiSavLicenseForm";
+import { useNuxiSavLicenseData } from "@/hooks/useNuxiSavLicenseData";
+import { NuxiSavLicense, NuxiSavLicenseFilters, SortConfig } from "@/types/license";
+import { PlusCircle } from "lucide-react";
 
 export default function NuxiSavLicenses() {
+  // État pour les filtres
+  const [filters, setFilters] = useState<NuxiSavLicenseFilters>({
+    idClient: "",
+    identifiantWeb: "",
+    serial: "",
+    onlyWithAtel: false,
+    onlyWithTrck: false,
+    onlyWithTckWeb: false,
+    onlyWithAud: false,
+    onlyWithSdk: false,
+    hideSuspended: false
+  });
+
+  // État pour le tri
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "ID",
+    direction: "desc"
+  });
+
+  // État pour la pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 15;
+
+  // État pour la licence sélectionnée
+  const [selectedLicense, setSelectedLicense] = useState<NuxiSavLicense | null>(null);
+  
+  // État pour indiquer si on est en train de créer une nouvelle licence
+  const [isNewLicense, setIsNewLicense] = useState<boolean>(false);
+
+  // Récupération des données avec le hook personnalisé
+  const {
+    licenses,
+    isLoading,
+    createLicense,
+    updateLicense,
+    pagination
+  } = useNuxiSavLicenseData(filters, sortConfig, currentPage, pageSize);
+
+  // Fonction pour gérer le changement de tri
+  const handleSort = (key: string) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc"
+    }));
+  };
+
+  // Fonction pour gérer la sélection d'une licence
+  const handleSelectLicense = (license: NuxiSavLicense) => {
+    setSelectedLicense(license);
+    setIsNewLicense(false);
+  };
+
+  // Fonction pour créer une nouvelle licence
+  const handleNewLicense = () => {
+    const emptyLicense: NuxiSavLicense = {
+      ID: -1,
+      IdClient: 0,
+      NomSoft: "NuxiSav",
+      IdentifiantWeb: "",
+      SerialPermanente: "",
+      SerialFlotante: "",
+      Options: "",
+      Suspendu: 0,
+      IDSynchro: "",
+      Der_Utilisation: null,
+      Version: "",
+      DateLimite: null,
+      NbrPermanente: 1,
+      NbrFlotante: 0,
+      NbrSession: 0,
+      Info: "",
+      Postes: []
+    };
+    
+    setSelectedLicense(emptyLicense);
+    setIsNewLicense(true);
+  };
+
+  // Fonction pour enregistrer une licence (création ou mise à jour)
+  const handleSaveLicense = (license: NuxiSavLicense) => {
+    if (isNewLicense) {
+      createLicense(license);
+    } else {
+      updateLicense(license);
+    }
+    
+    // Réinitialiser après enregistrement
+    setSelectedLicense(null);
+    setIsNewLicense(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6">
       <LicenseNavigation currentType="nuxisav" />
-      <div className="p-8 text-center bg-slate-100 rounded-lg">
-        <h2 className="text-2xl font-bold mb-4">Gestion des licences NuxiSAV</h2>
-        <p className="text-lg">Cette section sera implémentée ultérieurement.</p>
-        <p className="text-sm text-slate-500 mt-4">Les licences NuxiSAV sont stockées dans une base différente et auront une configuration spécifique.</p>
+      
+      {/* Titre et bouton nouvelle licence */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Gestion des licences NuxiSAV</h1>
+        <Button onClick={handleNewLicense}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Nouvelle licence
+        </Button>
       </div>
+      
+      {/* Panneau de filtres */}
+      <NuxiSavFilterPanel 
+        filters={filters} 
+        onFilterChange={setFilters} 
+      />
+      
+      {/* Tableau des licences */}
+      <div className="mb-4">
+        <NuxiSavLicenseTable 
+          licenses={licenses || []} 
+          isLoading={isLoading}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          onSelectLicense={handleSelectLicense}
+          selectedLicenseId={selectedLicense?.ID}
+        />
+        
+        {/* Pagination */}
+        {!isLoading && licenses && licenses.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
+      </div>
+      
+      {/* Formulaire d'édition de licence */}
+      <NuxiSavLicenseForm 
+        license={selectedLicense} 
+        onSave={handleSaveLicense}
+        isNew={isNewLicense}
+      />
     </div>
   );
 }

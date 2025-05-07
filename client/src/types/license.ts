@@ -99,12 +99,20 @@ export interface ApiKeyLicense {
 export interface NuxiSavLicense {
   ID: number;
   IdClient: number;
+  NomSoft: string | null;
   IdentifiantWeb: string | null;
   SerialPermanente: string | null;
-  NbrPermanente: number;
+  SerialFlotante: string | null;
   Options: string | null;
-  Version: string | null;
   Suspendu: number | null;
+  IDSynchro: string | null;
+  Der_Utilisation: string | null;
+  Version: string | null;
+  DateLimite: string | null;
+  NbrPermanente: number;
+  NbrFlotante: number;
+  NbrSession: number;
+  Info: string | null;
   Postes: NuxiSavPoste[];
 }
 

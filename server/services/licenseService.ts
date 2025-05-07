@@ -647,6 +647,16 @@ class NuxiSavLicenseService {
     console.log('Received sort config:', JSON.stringify(sortConfig));
     console.log('Page:', page, 'Page size:', pageSize);
     
+    // Debugging - Examiner la structure de la table
+    try {
+      const { executeRawQuery } = await import('../db');
+      console.log("Examining structure of table 'Licences'...");
+      const columns = await executeRawQuery('DESCRIBE Licences');
+      console.log("Columns in table 'Licences':", columns);
+    } catch (error) {
+      console.error("Error examining Licences table structure:", error);
+    }
+    
     // Calculer l'offset pour la pagination
     const offset = (page - 1) * pageSize;
     
@@ -736,12 +746,20 @@ class NuxiSavLicenseService {
           return {
             ID: license.IdLicence,
             IdClient: license.IdClient,
+            NomSoft: license.NomSoft,
             IdentifiantWeb: license.IdentifiantWeb,
             SerialPermanente: license.SerialPermanente,
-            NbrPermanente: license.NbrPermanente,
+            SerialFlotante: license.SerialFlotante,
             Options: license.Options,
-            Version: license.Version,
             Suspendu: license.Suspendu,
+            IDSynchro: license.IDSynchro,
+            Der_Utilisation: license.Der_Utilisation,
+            Version: license.Version,
+            DateLimite: license.DateLimite,
+            NbrPermanente: license.NbrPermanente || 0,
+            NbrFlotante: license.NbrFlotante || 0,
+            NbrSession: license.NbrSession || 0,
+            Info: license.Info,
             Postes: postes.map((poste: any) => ({
               ID: poste.IdPoste,
               IDLicence: poste.IDLicence,
@@ -795,12 +813,20 @@ class NuxiSavLicenseService {
       return {
         ID: license.IdLicence,
         IdClient: license.IdClient,
+        NomSoft: license.NomSoft,
         IdentifiantWeb: license.IdentifiantWeb,
         SerialPermanente: license.SerialPermanente,
-        NbrPermanente: license.NbrPermanente,
+        SerialFlotante: license.SerialFlotante,
         Options: license.Options,
-        Version: license.Version,
         Suspendu: license.Suspendu,
+        IDSynchro: license.IDSynchro,
+        Der_Utilisation: license.Der_Utilisation,
+        Version: license.Version,
+        DateLimite: license.DateLimite,
+        NbrPermanente: license.NbrPermanente || 0,
+        NbrFlotante: license.NbrFlotante || 0,
+        NbrSession: license.NbrSession || 0,
+        Info: license.Info,
         Postes: postes.map((poste: any) => ({
           ID: poste.IdPoste,
           IDLicence: poste.IDLicence,
@@ -832,18 +858,26 @@ class NuxiSavLicenseService {
       // Insérer la licence
       const insertQuery = `
         INSERT INTO ${this.licencesTableName} 
-        (IdClient, IdentifiantWeb, SerialPermanente, NbrPermanente, Options, Version, Suspendu)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        (IdClient, NomSoft, IdentifiantWeb, SerialPermanente, SerialFlotante, Options, 
+         Suspendu, IDSynchro, Version, DateLimite, NbrPermanente, NbrFlotante, NbrSession, Info)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       
       const result = await executeRawQuery(insertQuery, [
         licenseFields.IdClient,
+        licenseFields.NomSoft,
         licenseFields.IdentifiantWeb,
         licenseFields.SerialPermanente,
-        licenseFields.NbrPermanente,
+        licenseFields.SerialFlotante,
         licenseFields.Options,
+        licenseFields.Suspendu || 0,
+        licenseFields.IDSynchro,
         licenseFields.Version,
-        licenseFields.Suspendu || 0
+        licenseFields.DateLimite,
+        licenseFields.NbrPermanente || 0,
+        licenseFields.NbrFlotante || 0,
+        licenseFields.NbrSession || 0,
+        licenseFields.Info
       ]);
       
       const licenseId = result.insertId;
@@ -874,19 +908,27 @@ class NuxiSavLicenseService {
       // Mettre à jour la licence
       const updateQuery = `
         UPDATE ${this.licencesTableName} 
-        SET IdClient = ?, IdentifiantWeb = ?, SerialPermanente = ?, 
-            NbrPermanente = ?, Options = ?, Version = ?, Suspendu = ?
+        SET IdClient = ?, NomSoft = ?, IdentifiantWeb = ?, SerialPermanente = ?, SerialFlotante = ?,
+            Options = ?, Suspendu = ?, IDSynchro = ?, Version = ?, DateLimite = ?,
+            NbrPermanente = ?, NbrFlotante = ?, NbrSession = ?, Info = ?
         WHERE IdLicence = ?
       `;
       
       await executeRawQuery(updateQuery, [
         licenseFields.IdClient,
+        licenseFields.NomSoft,
         licenseFields.IdentifiantWeb,
         licenseFields.SerialPermanente,
-        licenseFields.NbrPermanente,
+        licenseFields.SerialFlotante,
         licenseFields.Options,
-        licenseFields.Version,
         licenseFields.Suspendu || 0,
+        licenseFields.IDSynchro,
+        licenseFields.Version,
+        licenseFields.DateLimite,
+        licenseFields.NbrPermanente || 0,
+        licenseFields.NbrFlotante || 0,
+        licenseFields.NbrSession || 0,
+        licenseFields.Info,
         id
       ]);
       
