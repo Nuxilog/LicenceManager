@@ -135,7 +135,7 @@ export default function NuxiSavLicenseTable({
           {licenses.map((license) => (
             <TableRow 
               key={license.ID}
-              className={`h-6 py-1 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-slate-100' : ''}`}
+              className={`h-6 py-1 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-[#DBEAFE]' : ''}`}
               onClick={() => onSelectLicense(license)}
             >
               <TableCell className="font-medium py-1">{license.ID}</TableCell>

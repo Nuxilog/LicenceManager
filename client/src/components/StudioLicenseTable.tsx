@@ -115,7 +115,7 @@ export default function StudioLicenseTable({
           {licenses.map((license) => (
             <TableRow 
               key={license.ID} 
-              className={`${selectedLicenseId === license.ID ? "bg-blue-50" : ""} hover:bg-gray-50 cursor-pointer`}
+              className={`${selectedLicenseId === license.ID ? "bg-[#DBEAFE]" : ""} hover:bg-gray-50 cursor-pointer`}
               onClick={() => onSelectLicense(license)}
             >
               <TableCell className="font-medium py-2">{license.ID}</TableCell>

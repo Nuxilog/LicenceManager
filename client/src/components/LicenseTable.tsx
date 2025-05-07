@@ -133,7 +133,7 @@ export default function LicenseTable({
             {!isLoading && licenses.map((license) => (
               <TableRow 
                 key={license.ID} 
-                className={`hover:bg-slate-50 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-blue-50' : ''}`}
+                className={`hover:bg-slate-50 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-[#DBEAFE]' : ''}`}
                 onClick={() => onSelectLicense(license)}
               >
                 <TableCell className="whitespace-nowrap py-2">{license.ID}</TableCell>
