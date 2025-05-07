@@ -328,7 +328,7 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
           </TableHeader>
           <TableBody>
             {editedLicense.Postes.map((poste) => (
-              <TableRow key={poste.ID} className="py-2">
+              <TableRow key={poste.ID} className="h-8">
                 <TableCell>{poste.ID}</TableCell>
                 <TableCell>{poste.Serial || '-'}</TableCell>
                 <TableCell>{poste.Emprunte_PC || '-'}</TableCell>
