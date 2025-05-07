@@ -45,7 +45,7 @@ export default function StudioLicenseTable({
   // Rendere le badge pour un module activé
   const renderModuleBadge = (isEnabled: number, label: string) => {
     if (isEnabled) {
-      return <Badge variant="default" className="bg-green-600 hover:bg-green-700">{label}</Badge>;
+      return <Badge variant="default" className="bg-green-600 hover:bg-green-700 px-1.5 py-0 text-xs">{label}</Badge>;
     }
     return null;
   };
@@ -53,9 +53,9 @@ export default function StudioLicenseTable({
   // Rendre l'état suspendu
   const renderSuspendedState = (suspended: number) => {
     if (suspended) {
-      return <Badge variant="default" className="bg-red-600 hover:bg-red-700">Suspendu</Badge>;
+      return <Badge variant="default" className="bg-red-600 hover:bg-red-700 px-1.5 py-0 text-xs">Suspendu</Badge>;
     }
-    return <Badge variant="default" className="bg-green-600 hover:bg-green-700">Actif</Badge>;
+    return <Badge variant="default" className="bg-green-600 hover:bg-green-700 px-1.5 py-0 text-xs">Actif</Badge>;
   };
 
   if (isLoading) {
@@ -70,7 +70,6 @@ export default function StudioLicenseTable({
               <TableHead>{renderSortableHeader("Identifiant", "IdentifiantUser")}</TableHead>
               <TableHead>Modules</TableHead>
               <TableHead>État</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -82,7 +81,6 @@ export default function StudioLicenseTable({
                 <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -111,20 +109,20 @@ export default function StudioLicenseTable({
             <TableHead>{renderSortableHeader("Identifiant", "IdentifiantUser")}</TableHead>
             <TableHead>Modules</TableHead>
             <TableHead>État</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {licenses.map((license) => (
             <TableRow 
               key={license.ID} 
-              className={selectedLicenseId === license.ID ? "bg-blue-50" : undefined}
+              className={`${selectedLicenseId === license.ID ? "bg-blue-50" : ""} hover:bg-gray-50 cursor-pointer`}
+              onClick={() => onSelectLicense(license)}
             >
-              <TableCell className="font-medium">{license.ID}</TableCell>
-              <TableCell>{formatNumClient(license.NumClient)}</TableCell>
-              <TableCell>{license.Serial || "N/A"}</TableCell>
-              <TableCell>{license.IdentifiantUser || "N/A"}</TableCell>
-              <TableCell>
+              <TableCell className="font-medium py-2">{license.ID}</TableCell>
+              <TableCell className="py-2">{formatNumClient(license.NumClient)}</TableCell>
+              <TableCell className="py-2">{license.Serial || "N/A"}</TableCell>
+              <TableCell className="py-2">{license.IdentifiantUser || "N/A"}</TableCell>
+              <TableCell className="py-2">
                 <div className="flex flex-wrap gap-1">
                   {renderModuleBadge(license.PDF, "PDF")}
                   {renderModuleBadge(license.Vue, "Vue")}
@@ -132,16 +130,7 @@ export default function StudioLicenseTable({
                   {renderModuleBadge(license.WDE, "WDE")}
                 </div>
               </TableCell>
-              <TableCell>{renderSuspendedState(license.Suspendu)}</TableCell>
-              <TableCell className="text-right">
-                <NuxiButton
-                  onClick={() => onSelectLicense(license)}
-                  variant="primary"
-                  size="sm"
-                >
-                  Modifier
-                </NuxiButton>
-              </TableCell>
+              <TableCell className="py-2">{renderSuspendedState(license.Suspendu)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
