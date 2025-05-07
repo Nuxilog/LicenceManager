@@ -984,7 +984,9 @@ class NuxiSavLicenseService {
           WHERE IdPoste = ? AND IDLicence = ?
         `;
         // Formater correctement Der_Utilisation pour MySQL (format YYYY-MM-DD HH:MM:SS)
-        let derUtilisation = null;
+        // Si aucune date n'est fournie, on utilise la date actuelle comme valeur par défaut
+        let derUtilisation;
+        
         if (poste.Der_Utilisation) {
           // Si c'est une chaîne ISO, convertir au format MySQL
           if (typeof poste.Der_Utilisation === 'string') {
@@ -993,6 +995,9 @@ class NuxiSavLicenseService {
           } else {
             derUtilisation = poste.Der_Utilisation;
           }
+        } else {
+          // Pour un poste libéré, utiliser la date/heure actuelle au format MySQL
+          derUtilisation = new Date().toISOString().slice(0, 19).replace('T', ' ');
         }
         
         await executeRawQuery(updatePosteQuery, [
@@ -1000,7 +1005,7 @@ class NuxiSavLicenseService {
           poste.Emprunte_PC || "",  // Utiliser une chaîne vide au lieu de null
           poste.Nom_Poste || "",    // Utiliser une chaîne vide au lieu de null
           poste.Nom_Session || "",  // Utiliser une chaîne vide au lieu de null
-          derUtilisation,
+          derUtilisation,           // Jamais null grâce à notre gestion ci-dessus
           poste.Version || "",      // Utiliser une chaîne vide au lieu de null
           poste.Connecte || 0,
           poste.IdPoste,
@@ -1016,7 +1021,9 @@ class NuxiSavLicenseService {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         // Formater correctement Der_Utilisation pour MySQL (format YYYY-MM-DD HH:MM:SS)
-        let derUtilisation = null;
+        // Si aucune date n'est fournie, on utilise la date actuelle comme valeur par défaut
+        let derUtilisation;
+        
         if (poste.Der_Utilisation) {
           // Si c'est une chaîne ISO, convertir au format MySQL
           if (typeof poste.Der_Utilisation === 'string') {
@@ -1025,6 +1032,9 @@ class NuxiSavLicenseService {
           } else {
             derUtilisation = poste.Der_Utilisation;
           }
+        } else {
+          // Pour un poste libéré, utiliser la date/heure actuelle au format MySQL
+          derUtilisation = new Date().toISOString().slice(0, 19).replace('T', ' ');
         }
         
         await executeRawQuery(insertPosteQuery, [
@@ -1033,7 +1043,7 @@ class NuxiSavLicenseService {
           poste.Emprunte_PC || "",  // Utiliser une chaîne vide au lieu de null
           poste.Nom_Poste || "",    // Utiliser une chaîne vide au lieu de null
           poste.Nom_Session || "",  // Utiliser une chaîne vide au lieu de null
-          derUtilisation,
+          derUtilisation,           // Jamais null grâce à notre gestion ci-dessus
           poste.Version || "",      // Utiliser une chaîne vide au lieu de null
           poste.Connecte || 0
         ]);
