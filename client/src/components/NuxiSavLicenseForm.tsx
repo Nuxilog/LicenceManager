@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { NuxiSavLicense, NuxiSavPoste } from "@/types/license";
 import { Copy, Trash2 } from "lucide-react";
+import { formatDateFr } from "@/lib/utils";
 
 interface NuxiSavLicenseFormProps {
   license: NuxiSavLicense | null;
@@ -339,7 +340,7 @@ export default function NuxiSavLicenseForm({ license, onSave, isNew }: NuxiSavLi
                 <TableCell>{poste.Emprunte_PC || '-'}</TableCell>
                 <TableCell>{poste.Nom_Poste || '-'}</TableCell>
                 <TableCell>{poste.Nom_Session || '-'}</TableCell>
-                <TableCell>{poste.Der_Utilisation || '-'}</TableCell>
+                <TableCell>{formatDateFr(poste.Der_Utilisation)}</TableCell>
                 <TableCell>{poste.Version || '-'}</TableCell>
                 <TableCell>
                   {poste.Connecte === 1 ? (
