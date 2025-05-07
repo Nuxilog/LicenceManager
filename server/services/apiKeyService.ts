@@ -46,25 +46,17 @@ class ApiKeyService {
         queryParams.push(`%${filters.serial}%`);
       }
       
-      // Nouveau filtre par quantité minimale
-      if (filters.minQuantity !== undefined) {
-        query += ` AND Qte >= ?`;
-        queryParams.push(parseInt(filters.minQuantity));
-      }
-      
-      // Filtre pour les restrictions
-      if (filters.hasRestriction) {
-        query += ` AND Restriction != ''`;
+      // Filtre pour les licences épuisées (quantité <= 0)
+      if (filters.onlyExpired === 'true') {
+        query += ` AND Qte <= 0`;
+      } else {
+        // Exclure les licences épuisées par défaut
+        query += ` AND Qte > 0`;
       }
       
       // Filtre pour les licences inactives avec "STOP" dans la restriction
       if (filters.showInactive === 'false') {
         query += ` AND Restriction NOT LIKE '%stop%'`;
-      }
-      
-      // Filtre pour les licences épuisées (quantité = 0)
-      if (filters.showExpired === 'false') {
-        query += ` AND Qte > 0`;
       }
       
       // Ajouter le tri

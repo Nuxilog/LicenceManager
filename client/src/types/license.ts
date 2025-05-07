@@ -64,9 +64,7 @@ export interface ApiKeyLicenseFilters {
   clientId?: string;
   apiKey?: string;
   serial?: string;
-  minQuantity?: number;
-  hasRestriction?: boolean;
-  showExpired?: boolean;
+  onlyExpired?: boolean; // Pour filtrer uniquement les licences épuisées (Qté <= 0)
   showInactive?: boolean;
 }
 

@@ -16,9 +16,7 @@ export default function ApiKeyLicenses() {
     clientId: "",
     apiKey: "",
     serial: "",
-    minQuantity: undefined as number | undefined,
-    hasRestriction: false,
-    showExpired: false,
+    onlyExpired: false,
     showInactive: false
   });
   

@@ -21,23 +21,18 @@ function applyFilters(data: ApiKeyLicense[], filters: ApiKeyLicenseFilters): Api
       return false;
     }
     
-    // Filtrage par quantité minimale
-    if (filters.minQuantity !== undefined && license.Quantity < filters.minQuantity) {
+    // Filtrer uniquement les licences épuisées (Qté <= 0) si onlyExpired est true
+    if (filters.onlyExpired && license.Quantity > 0) {
       return false;
     }
     
-    // Filtrage par restriction
-    if (filters.hasRestriction && !license.Restriction.trim()) {
+    // Ne pas afficher les licences épuisées (Qté <= 0) si onlyExpired est false
+    if (!filters.onlyExpired && license.Quantity <= 0) {
       return false;
     }
     
     // Ne pas afficher les licences inactives (avec STOP dans la restriction)
     if (!filters.showInactive && license.Restriction.toLowerCase().includes('stop')) {
-      return false;
-    }
-    
-    // Ne pas afficher les licences épuisées (quantité = 0)
-    if (!filters.showExpired && license.Quantity <= 0) {
       return false;
     }
     
@@ -96,9 +91,7 @@ export function useApiKeyLicenseData(filters: ApiKeyLicenseFilters, sortConfig: 
         if (filters.clientId) params.append('clientId', filters.clientId);
         if (filters.apiKey) params.append('apiKey', filters.apiKey);
         if (filters.serial) params.append('serial', filters.serial);
-        if (filters.minQuantity !== undefined) params.append('minQuantity', filters.minQuantity.toString());
-        params.append('hasRestriction', filters.hasRestriction ? 'true' : 'false');
-        params.append('showExpired', filters.showExpired ? 'true' : 'false');
+        params.append('onlyExpired', filters.onlyExpired ? 'true' : 'false');
         params.append('showInactive', filters.showInactive ? 'true' : 'false');
         params.append('sortBy', sortConfig.key);
         params.append('sortDirection', sortConfig.direction);

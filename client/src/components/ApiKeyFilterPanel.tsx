@@ -11,9 +11,7 @@ interface ApiKeyFilterPanelProps {
     clientId: string;
     apiKey: string;
     serial: string;
-    minQuantity: number | undefined;
-    hasRestriction: boolean;
-    showExpired: boolean;
+    onlyExpired: boolean;
     showInactive: boolean;
   };
   onFilterChange: (filters: ApiKeyFilterPanelProps["filters"]) => void;
@@ -27,21 +25,17 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
     if (formRef.current) {
       const formData = new FormData(formRef.current);
       
-      const minQuantityValue = formData.get("minQuantity") as string;
-      const minQuantity = minQuantityValue ? parseInt(minQuantityValue) : undefined;
-      
       onFilterChange({
         ...filters,
         clientId: formData.get("clientId") as string || "",
         apiKey: formData.get("apiKey") as string || "",
         serial: formData.get("serial") as string || "",
-        minQuantity
       });
     }
   };
   
   const handleSwitchChange = (field: keyof ApiKeyLicenseFilters) => {
-    if (field === 'showExpired' || field === 'showInactive' || field === 'hasRestriction') {
+    if (field === 'onlyExpired' || field === 'showInactive') {
       onFilterChange({
         ...filters,
         [field]: !filters[field]
@@ -54,9 +48,7 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
       clientId: "",
       apiKey: "",
       serial: "",
-      minQuantity: undefined,
-      hasRestriction: false,
-      showExpired: false,
+      onlyExpired: false,
       showInactive: false
     });
     
@@ -101,43 +93,23 @@ export default function ApiKeyFilterPanel({ filters, onFilterChange }: ApiKeyFil
             </div>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6 mb-6">
-            <div className="space-y-2">
-              <Label htmlFor="minQuantity">Quantité minimale</Label>
-              <Input 
-                id="minQuantity" 
-                name="minQuantity" 
-                type="number"
-                placeholder="Quantité minimale" 
-                defaultValue={filters.minQuantity?.toString() || ''} 
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="hasRestriction" className="block mb-2">Avec restrictions</Label>
+          <div className="flex items-center space-x-8 mb-6">
+            <div className="flex items-center space-x-2">
               <Switch 
-                id="hasRestriction" 
-                checked={filters.hasRestriction} 
-                onCheckedChange={() => handleSwitchChange('hasRestriction')} 
+                id="onlyExpired" 
+                checked={filters.onlyExpired} 
+                onCheckedChange={() => handleSwitchChange('onlyExpired')} 
               />
+              <Label htmlFor="onlyExpired">Filtrer épuisés (Qté ≤ 0)</Label>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="showExpired" className="block mb-2">Afficher épuisées (Qté = 0)</Label>
-              <Switch 
-                id="showExpired" 
-                checked={filters.showExpired} 
-                onCheckedChange={() => handleSwitchChange('showExpired')} 
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="showInactive" className="block mb-2">Afficher inactives (STOP)</Label>
+            <div className="flex items-center space-x-2">
               <Switch 
                 id="showInactive" 
                 checked={filters.showInactive} 
                 onCheckedChange={() => handleSwitchChange('showInactive')} 
               />
+              <Label htmlFor="showInactive">Afficher inactives (avec STOP)</Label>
             </div>
           </div>
           
