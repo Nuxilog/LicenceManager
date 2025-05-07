@@ -635,8 +635,8 @@ export const studioLicenseService = new StudioLicenseService();
  * Service pour la gestion des licences NuxiSav
  */
 class NuxiSavLicenseService {
-  private licencesTableName = 'licences';
-  private postesTableName = 'postes';
+  private licencesTableName = 'Licences';
+  private postesTableName = 'Postes';
   
   /**
    * Get NuxiSav licenses with optional filtering and sorting
@@ -729,8 +729,7 @@ class NuxiSavLicenseService {
     
     try {
       // Exécuter la requête pour récupérer les licences
-      const { db } = await getDb();
-      if (!db) throw new Error("Database connection not established");
+      const { executeRawQuery } = await import('../db');
       
       const licenses = await executeRawQuery(query, params);
       
@@ -787,8 +786,8 @@ class NuxiSavLicenseService {
    */
   async getLicenseById(id: number) {
     try {
-      const { db } = await getDb();
-      if (!db) throw new Error("Database connection not established");
+      // Importer la fonction executeRawQuery directement
+      const { executeRawQuery } = await import('../db');
       
       // Récupérer la licence
       const licenseQuery = `
@@ -850,8 +849,7 @@ class NuxiSavLicenseService {
    */
   async createLicense(licenseData: any) {
     try {
-      const { db } = await getDb();
-      if (!db) throw new Error("Database connection not established");
+      const { executeRawQuery } = await import('../db');
       
       const { Postes, ...licenseFields } = licenseData;
       
@@ -900,8 +898,7 @@ class NuxiSavLicenseService {
    */
   async updateLicense(id: number, licenseData: any) {
     try {
-      const { db } = await getDb();
-      if (!db) throw new Error("Database connection not established");
+      const { executeRawQuery } = await import('../db');
       
       const { Postes, ...licenseFields } = licenseData;
       
@@ -951,6 +948,7 @@ class NuxiSavLicenseService {
    */
   private async updatePostes(licenseId: number, postes: any[]) {
     try {
+      const { executeRawQuery } = await import('../db');
       // Récupérer les postes existants pour cette licence
       const existingPostesQuery = `
         SELECT * FROM ${this.postesTableName}
