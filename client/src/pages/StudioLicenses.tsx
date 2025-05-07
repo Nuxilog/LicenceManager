@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { StudioLicense } from "@/types/license";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { PlusIcon } from "lucide-react";
+import { generateSerial } from "@/lib/licenseUtils";
 
 export default function StudioLicenses() {
   const { toast } = useToast();
@@ -60,11 +61,11 @@ export default function StudioLicenses() {
   };
 
   const handleCreateNew = () => {
-    // Créer une nouvelle licence vide
+    // Créer une nouvelle licence avec un Serial généré automatiquement
     const emptyLicense: StudioLicense = {
       ID: 0,
       NumClient: 0,
-      Serial: null,
+      Serial: generateSerial(), // Génération automatique du Serial
       IdentifiantUser: null,
       PDF: 0,
       Vue: 0,

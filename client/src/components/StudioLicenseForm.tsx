@@ -119,33 +119,23 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
             
             <div>
               <Label htmlFor="Serial" className="mb-1 text-sm">Serial <span className="text-red-500">*</span></Label>
-              <div className="flex gap-2">
-                <div className="relative flex-grow">
-                  <Input
-                    id="Serial"
-                    name="Serial"
-                    required
-                    value={formData.Serial || ''}
-                    onChange={handleInputChange}
-                    className="w-full pr-8"
-                  />
-                  <NuxiButton 
-                    type="button"
-                    variant="primary" 
-                    size="icon" 
-                    className="absolute right-0 top-0 h-full px-2"
-                    onClick={() => formData.Serial && copyToClipboard(formData.Serial)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </NuxiButton>
-                </div>
+              <div className="relative">
+                <Input
+                  id="Serial"
+                  name="Serial"
+                  required
+                  value={formData.Serial || ''}
+                  onChange={handleInputChange}
+                  className="w-full pr-8"
+                />
                 <NuxiButton 
-                  type="button" 
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFormData(prev => ({ ...prev, Serial: generateSerial() }))}
+                  type="button"
+                  variant="primary" 
+                  size="icon" 
+                  className="absolute right-0 top-0 h-full px-2"
+                  onClick={() => formData.Serial && copyToClipboard(formData.Serial)}
                 >
-                  Générer
+                  <Copy className="h-4 w-4" />
                 </NuxiButton>
               </div>
             </div>
