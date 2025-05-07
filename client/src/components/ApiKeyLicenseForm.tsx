@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { ApiKeyLicense } from "@/types/license";
 import { format } from "date-fns";
-import { Copy, RefreshCw } from "lucide-react";
+import { Copy, RefreshCw, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateSerial } from "@/lib/licenseUtils";
 
@@ -120,6 +120,8 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
       return { ...prev, ApiKeyV5: keyV5 };
     });
   };
+  
+
 
   return (
     <Card className="p-6">
