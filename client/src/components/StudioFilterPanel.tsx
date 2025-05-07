@@ -63,7 +63,7 @@ export default function StudioFilterPanel({ filters, onFilterChange }: StudioFil
               />
             </div>
           </div>
-          <div className="flex md:flex-col gap-4 md:gap-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
             <div className="flex items-center">
               <Checkbox 
                 id="pdf-only" 
@@ -71,6 +71,30 @@ export default function StudioFilterPanel({ filters, onFilterChange }: StudioFil
                 onCheckedChange={(checked) => handleChange("onlyWithPDF", Boolean(checked))}
               />
               <Label htmlFor="pdf-only" className="ml-2">Module PDF</Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="vue-only" 
+                checked={tempFilters.onlyWithVue}
+                onCheckedChange={(checked) => handleChange("onlyWithVue", Boolean(checked))}
+              />
+              <Label htmlFor="vue-only" className="ml-2">Module Vue</Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="page-perso-only" 
+                checked={tempFilters.onlyWithPagePerso}
+                onCheckedChange={(checked) => handleChange("onlyWithPagePerso", Boolean(checked))}
+              />
+              <Label htmlFor="page-perso-only" className="ml-2">Module Page Perso</Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="wde-only" 
+                checked={tempFilters.onlyWithWDE}
+                onCheckedChange={(checked) => handleChange("onlyWithWDE", Boolean(checked))}
+              />
+              <Label htmlFor="wde-only" className="ml-2">Module WDE</Label>
             </div>
             <div className="flex items-center">
               <Checkbox 
