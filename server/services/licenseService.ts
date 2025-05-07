@@ -981,12 +981,24 @@ class NuxiSavLicenseService {
               Der_Utilisation = ?, Version = ?, Connecte = ?
           WHERE IdPoste = ? AND IDLicence = ?
         `;
+        // Formater correctement Der_Utilisation pour MySQL (format YYYY-MM-DD HH:MM:SS)
+        let derUtilisation = null;
+        if (poste.Der_Utilisation) {
+          // Si c'est une chaîne ISO, convertir au format MySQL
+          if (typeof poste.Der_Utilisation === 'string') {
+            const date = new Date(poste.Der_Utilisation);
+            derUtilisation = date.toISOString().slice(0, 19).replace('T', ' ');
+          } else {
+            derUtilisation = poste.Der_Utilisation;
+          }
+        }
+        
         await executeRawQuery(updatePosteQuery, [
           poste.Serial,
           poste.Emprunte_PC,
           poste.Nom_Poste,
           poste.Nom_Session,
-          poste.Der_Utilisation,
+          derUtilisation,
           poste.Version,
           poste.Connecte || 0,
           poste.IdPoste,
@@ -1001,13 +1013,25 @@ class NuxiSavLicenseService {
           (IDLicence, Serial, Emprunte_PC, Nom_Poste, Nom_Session, Der_Utilisation, Version, Connecte)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
+        // Formater correctement Der_Utilisation pour MySQL (format YYYY-MM-DD HH:MM:SS)
+        let derUtilisation = null;
+        if (poste.Der_Utilisation) {
+          // Si c'est une chaîne ISO, convertir au format MySQL
+          if (typeof poste.Der_Utilisation === 'string') {
+            const date = new Date(poste.Der_Utilisation);
+            derUtilisation = date.toISOString().slice(0, 19).replace('T', ' ');
+          } else {
+            derUtilisation = poste.Der_Utilisation;
+          }
+        }
+        
         await executeRawQuery(insertPosteQuery, [
           licenseId,
           poste.Serial,
           poste.Emprunte_PC,
           poste.Nom_Poste,
           poste.Nom_Session,
-          poste.Der_Utilisation,
+          derUtilisation,
           poste.Version,
           poste.Connecte || 0
         ]);
