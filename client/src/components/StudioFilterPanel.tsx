@@ -19,145 +19,73 @@ interface StudioFilterPanelProps {
 }
 
 export default function StudioFilterPanel({ filters, onFilterChange }: StudioFilterPanelProps) {
-  const [localFilters, setLocalFilters] = useState({
-    numClient: filters.numClient || "",
-    serial: filters.serial || "",
-    identifiantUser: filters.identifiantUser || "",
-    onlyWithPDF: filters.onlyWithPDF || false,
-    onlyWithVue: filters.onlyWithVue || false,
-    onlyWithPagePerso: filters.onlyWithPagePerso || false,
-    onlyWithWDE: filters.onlyWithWDE || false,
-    hideSuspended: filters.hideSuspended || false
-  });
+  const [tempFilters, setTempFilters] = useState(filters);
+
+  const handleChange = (field: keyof typeof filters, value: string | boolean) => {
+    setTempFilters(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onFilterChange(localFilters);
-  };
-
-  const handleReset = () => {
-    const resetFilters = {
-      numClient: "",
-      serial: "",
-      identifiantUser: "",
-      onlyWithPDF: false,
-      onlyWithVue: false,
-      onlyWithPagePerso: false,
-      onlyWithWDE: false,
-      hideSuspended: false
-    };
-    
-    setLocalFilters(resetFilters);
-    onFilterChange(resetFilters);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setLocalFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    setLocalFilters(prev => ({ ...prev, [name]: checked }));
+    onFilterChange(tempFilters);
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-6">
-      <h3 className="text-lg font-medium mb-3">Filtrer les licences Studio</h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="numClient">Numéro Client</Label>
-            <Input
-              id="numClient"
-              name="numClient"
-              placeholder="Numéro client"
-              value={localFilters.numClient}
-              onChange={handleInputChange}
-            />
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-6">
+      <form onSubmit={handleSubmit}>
+        <div className="flex flex-col md:flex-row md:items-end gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow">
+            <div>
+              <Label htmlFor="filter-client" className="mb-1">Numéro Client</Label>
+              <Input 
+                id="filter-client" 
+                value={tempFilters.numClient}
+                onChange={(e) => handleChange("numClient", e.target.value)}
+                placeholder="Numéro client"
+              />
+            </div>
+            <div>
+              <Label htmlFor="filter-serial" className="mb-1">Numéro de série</Label>
+              <Input 
+                id="filter-serial" 
+                value={tempFilters.serial}
+                onChange={(e) => handleChange("serial", e.target.value)}
+                placeholder="Numéro de série"
+              />
+            </div>
+            <div>
+              <Label htmlFor="filter-user" className="mb-1">Identifiant utilisateur</Label>
+              <Input 
+                id="filter-user" 
+                value={tempFilters.identifiantUser}
+                onChange={(e) => handleChange("identifiantUser", e.target.value)}
+                placeholder="Identifiant utilisateur"
+              />
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="serial">Numéro de Série</Label>
-            <Input
-              id="serial"
-              name="serial"
-              placeholder="Contient..."
-              value={localFilters.serial}
-              onChange={handleInputChange}
-            />
+          <div className="flex md:flex-col gap-4 md:gap-2">
+            <div className="flex items-center">
+              <Checkbox 
+                id="pdf-only" 
+                checked={tempFilters.onlyWithPDF}
+                onCheckedChange={(checked) => handleChange("onlyWithPDF", Boolean(checked))}
+              />
+              <Label htmlFor="pdf-only" className="ml-2">Module PDF</Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="hide-suspended" 
+                checked={tempFilters.hideSuspended}
+                onCheckedChange={(checked) => handleChange("hideSuspended", Boolean(checked))}
+              />
+              <Label htmlFor="hide-suspended" className="ml-2">Masquer suspendues</Label>
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="identifiantUser">Identifiant Utilisateur</Label>
-            <Input
-              id="identifiantUser"
-              name="identifiantUser"
-              placeholder="Contient..."
-              value={localFilters.identifiantUser}
-              onChange={handleInputChange}
-            />
+          <div>
+            <NuxiButton type="submit" variant="secondary">
+              Appliquer les filtres
+            </NuxiButton>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="onlyWithPDF" 
-              checked={localFilters.onlyWithPDF}
-              onCheckedChange={(checked) => handleCheckboxChange("onlyWithPDF", checked === true)}
-            />
-            <Label htmlFor="onlyWithPDF">Module PDF</Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="onlyWithVue" 
-              checked={localFilters.onlyWithVue}
-              onCheckedChange={(checked) => handleCheckboxChange("onlyWithVue", checked === true)}
-            />
-            <Label htmlFor="onlyWithVue">Module Vue</Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="onlyWithPagePerso" 
-              checked={localFilters.onlyWithPagePerso}
-              onCheckedChange={(checked) => handleCheckboxChange("onlyWithPagePerso", checked === true)}
-            />
-            <Label htmlFor="onlyWithPagePerso">Module Page Perso</Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="onlyWithWDE" 
-              checked={localFilters.onlyWithWDE}
-              onCheckedChange={(checked) => handleCheckboxChange("onlyWithWDE", checked === true)}
-            />
-            <Label htmlFor="onlyWithWDE">Module WDE</Label>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2 pt-2">
-          <Checkbox 
-            id="hideSuspended" 
-            checked={localFilters.hideSuspended}
-            onCheckedChange={(checked) => handleCheckboxChange("hideSuspended", checked === true)}
-          />
-          <Label htmlFor="hideSuspended">Masquer les licences suspendues</Label>
-        </div>
-        
-        <div className="flex justify-end space-x-2 pt-4">
-          <NuxiButton 
-            type="button" 
-            variant="outline" 
-            onClick={handleReset}
-          >
-            Réinitialiser
-          </NuxiButton>
-          <NuxiButton type="submit" variant="primary">
-            Appliquer les filtres
-          </NuxiButton>
         </div>
       </form>
     </div>

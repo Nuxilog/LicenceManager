@@ -136,7 +136,7 @@ export default function StudioLicenseTable({
               <TableCell className="text-right">
                 <NuxiButton
                   onClick={() => onSelectLicense(license)}
-                  variant="outline"
+                  variant="primary"
                   size="sm"
                 >
                   Modifier

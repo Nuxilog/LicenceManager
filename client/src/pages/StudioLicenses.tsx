@@ -133,26 +133,7 @@ export default function StudioLicenses() {
         </p>
       </div>
       
-      {selectedLicense ? (
-        <StudioLicenseForm 
-          license={selectedLicense} 
-          onSave={handleSaveLicense} 
-          isNew={isCreatingNew} 
-        />
-      ) : null}
-      
       <StudioFilterPanel filters={filters} onFilterChange={handleFilterChange} />
-      
-      <div className="flex justify-end mb-4">
-        <NuxiButton 
-          variant="primary" 
-          size="default"
-          onClick={handleCreateNew}
-        >
-          <PlusIcon className="mr-2 h-4 w-4" />
-          Nouvelle licence
-        </NuxiButton>
-      </div>
       
       <StudioLicenseTable 
         licenses={licenses || []} 
@@ -166,27 +147,47 @@ export default function StudioLicenses() {
       {/* Pagination */}
       <div className="flex justify-center items-center my-4 space-x-2">
         <NuxiButton 
-          variant="outline" 
+          variant="primary" 
           size="sm" 
           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || isLoading}
         >
           Précédent
         </NuxiButton>
         
-        <span className="text-sm font-medium">
+        <span className="text-sm text-slate-600">
           Page {currentPage}
         </span>
         
         <NuxiButton 
-          variant="outline" 
+          variant="primary" 
           size="sm" 
           onClick={() => setCurrentPage(prev => prev + 1)}
-          disabled={!licenses || licenses.length < pageSize}
+          disabled={!licenses || licenses.length < pageSize || isLoading}
         >
           Suivant
         </NuxiButton>
       </div>
+      
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-slate-900">Détails de la licence</h2>
+        <NuxiButton 
+          onClick={handleCreateNew}
+          variant="secondary"
+          className="inline-flex items-center"
+        >
+          <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+          Ajouter une licence Studio
+        </NuxiButton>
+      </div>
+      
+      {selectedLicense && (
+        <StudioLicenseForm 
+          license={selectedLicense} 
+          onSave={handleSaveLicense} 
+          isNew={isCreatingNew} 
+        />
+      )}
     </div>
   );
 }
