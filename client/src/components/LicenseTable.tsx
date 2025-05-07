@@ -136,33 +136,33 @@ export default function LicenseTable({
                 className={`hover:bg-slate-50 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-blue-50' : ''}`}
                 onClick={() => onSelectLicense(license)}
               >
-                <TableCell className="whitespace-nowrap">{license.ID}</TableCell>
-                <TableCell className="whitespace-nowrap">{license.IDClient}</TableCell>
-                <TableCell className="whitespace-nowrap">{license.IDSynchro}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap py-2">{license.ID}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">{license.IDClient}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">{license.IDSynchro}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">
                   {getConfigurationLabel(license.Tablettes)}
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{license.Version}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap py-2">{license.Version}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">
                   {license.Premium ? (
                     <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Oui</Badge>
                   ) : (
                     <Badge variant="outline" className="bg-slate-100 text-slate-800 hover:bg-slate-100">Non</Badge>
                   )}
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{license.MDP_Premium}</TableCell>
-                <TableCell className="whitespace-nowrap">{license.Serial}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap py-2">{license.MDP_Premium}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">{license.Serial}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">
                   {license.Suspendu ? (
                     <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Oui</Badge>
                   ) : (
                     <Badge variant="outline" className="bg-slate-100 text-slate-800 hover:bg-slate-100">Non</Badge>
                   )}
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{formatDate(license.Date_DerUtilisation as string)}</TableCell>
-                <TableCell className="whitespace-nowrap">{formatDateOnly(license.Date_LimiteUtil as string)}</TableCell>
-                <TableCell className="whitespace-nowrap text-slate-500">{license.Options}</TableCell>
-                <TableCell className="whitespace-nowrap text-slate-500">{license.IdentifiantPC}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">{formatDate(license.Date_DerUtilisation as string)}</TableCell>
+                <TableCell className="whitespace-nowrap py-2">{formatDateOnly(license.Date_LimiteUtil as string)}</TableCell>
+                <TableCell className="whitespace-nowrap py-2 text-slate-500">{license.Options}</TableCell>
+                <TableCell className="whitespace-nowrap py-2 text-slate-500">{license.IdentifiantPC}</TableCell>
               </TableRow>
             ))}
           </TableBody>
