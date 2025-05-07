@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { NuxiButton } from "@/components/ui/nuxi-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { generateSerial } from "@/lib/licenseUtils";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Copy } from "lucide-react";
 
 interface StudioLicenseFormProps {
   license: StudioLicense | null;
@@ -81,6 +81,11 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
       [name]: checked ? 1 : 0
     }));
   };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("Serial copié dans le presse-papier");
+  };
 
   return (
     <div className="bg-white p-4 rounded-lg shadow border mb-4">
@@ -113,16 +118,27 @@ export default function StudioLicenseForm({ license, onSave, isNew }: StudioLice
             </div>
             
             <div>
-              <Label htmlFor="Serial" className="mb-1 text-sm">Numéro de série <span className="text-red-500">*</span></Label>
+              <Label htmlFor="Serial" className="mb-1 text-sm">Serial <span className="text-red-500">*</span></Label>
               <div className="flex gap-2">
-                <Input
-                  id="Serial"
-                  name="Serial"
-                  required
-                  value={formData.Serial || ''}
-                  onChange={handleInputChange}
-                  className="flex-grow"
-                />
+                <div className="relative flex-grow">
+                  <Input
+                    id="Serial"
+                    name="Serial"
+                    required
+                    value={formData.Serial || ''}
+                    onChange={handleInputChange}
+                    className="w-full pr-8"
+                  />
+                  <NuxiButton 
+                    type="button"
+                    variant="primary" 
+                    size="icon" 
+                    className="absolute right-0 top-0 h-full px-2"
+                    onClick={() => formData.Serial && copyToClipboard(formData.Serial)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </NuxiButton>
+                </div>
                 <NuxiButton 
                   type="button" 
                   variant="secondary"
