@@ -105,9 +105,11 @@ export default function NuxiSavLicenses() {
     <div className="container mx-auto px-4 py-6">
       <LicenseNavigation currentType="nuxisav" />
       
-      {/* Titre */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">Gestion des licences NuxiSAV</h1>
+      <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-lg mb-6">
+        <h2 className="text-lg font-semibold text-cyan-800 mb-2">Licences NuxiSAV</h2>
+        <p className="text-sm text-cyan-700">
+          Cette section permet de gérer les licences NuxiSAV et leurs postes associés.
+        </p>
       </div>
       
       {/* Panneau de filtres */}

@@ -128,13 +128,13 @@ export default function NuxiSavLicenseTable({
           {licenses.map((license) => (
             <TableRow 
               key={license.ID}
-              className={`h-8 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-slate-100' : ''}`}
+              className={`h-6 py-1 cursor-pointer ${selectedLicenseId === license.ID ? 'bg-slate-100' : ''}`}
               onClick={() => onSelectLicense(license)}
             >
-              <TableCell className="font-medium">{license.ID}</TableCell>
-              <TableCell>{license.IdClient}</TableCell>
-              <TableCell>{license.IdentifiantWeb || '-'}</TableCell>
-              <TableCell>
+              <TableCell className="font-medium py-1">{license.ID}</TableCell>
+              <TableCell className="py-1">{license.IdClient}</TableCell>
+              <TableCell className="py-1">{license.IdentifiantWeb || '-'}</TableCell>
+              <TableCell className="py-1">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -146,10 +146,10 @@ export default function NuxiSavLicenseTable({
                   </Tooltip>
                 </TooltipProvider>
               </TableCell>
-              <TableCell className="text-center">{license.NbrPermanente}</TableCell>
-              <TableCell>{renderOptionBadges(license.Options)}</TableCell>
-              <TableCell>{license.Version || '-'}</TableCell>
-              <TableCell className="text-center">
+              <TableCell className="py-1 text-center">{license.NbrPermanente}</TableCell>
+              <TableCell className="py-1">{renderOptionBadges(license.Options)}</TableCell>
+              <TableCell className="py-1">{license.Version || '-'}</TableCell>
+              <TableCell className="py-1 text-center">
                 {license.Suspendu === 1 ? (
                   <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
                     Suspendu
