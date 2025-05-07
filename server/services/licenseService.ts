@@ -370,7 +370,7 @@ export const nuxiDevLicenseService = new NuxiDevLicenseService();
 
 class StudioLicenseService {
   // Nom de la table pour les licences Studio
-  private tableName = 'licences_studio';
+  private tableName = 'LicencesStudio';
   
   /**
    * Get studio licenses with optional filtering and sorting
@@ -380,6 +380,14 @@ class StudioLicenseService {
     console.log('Received studio filters:', JSON.stringify(filters));
     console.log('Received sort config:', JSON.stringify(sortConfig));
     console.log('Page:', page, 'Page size:', pageSize);
+    
+    // Examiner la structure de la table
+    try {
+      const db = await import('../db');
+      await db.describeTable(this.tableName);
+    } catch (error) {
+      console.error("Erreur lors de l'examen de la structure de la table LicencesStudio:", error);
+    }
     
     // Calculer l'offset pour la pagination
     const offset = (page - 1) * pageSize;

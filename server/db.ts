@@ -127,6 +127,28 @@ export async function executeRawQuery(query: string, params: any[] = []) {
   }
 }
 
+// Function to list all database tables
+export async function listTables() {
+  const { connection } = await dbPromise;
+  
+  // Si pas de connexion disponible, renvoyer un tableau vide
+  if (!connection) {
+    console.warn("Database connection not available - cannot list tables");
+    return [];
+  }
+  
+  try {
+    console.log("Listing all available tables...");
+    const mysqlConnection = connection as MySqlConnection;
+    const [tables] = await mysqlConnection.query('SHOW TABLES');
+    console.log("Tables available in database:", tables);
+    return tables;
+  } catch (error: any) {
+    console.error("Error listing tables:", error);
+    return [];
+  }
+}
+
 // Export database
 export const getDb = async () => {
   const { db } = await dbPromise;

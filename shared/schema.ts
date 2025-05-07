@@ -101,7 +101,7 @@ export type InsertNuxiDevLicense = z.infer<typeof insertNuxiDevLicenseSchema>;
 export type NuxiDevLicense = typeof nuxiDevLicenses.$inferSelect;
 
 // Studio License model - matches the MySQL database structure
-export const studioLicenses = sqlTable("licences_studio", {
+export const studioLicenses = sqlTable("LicencesStudio", {
   ID: serial("IdLicencesStudio").primaryKey(),
   NumClient: integer("NumClient"),
   Serial: text("Serial"),
