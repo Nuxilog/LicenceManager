@@ -179,10 +179,10 @@ export default function ApiKeyLicenseForm({ license, onSave, isNew }: ApiKeyLice
                 <button 
                   type="button" 
                   className="text-blue-600 hover:text-blue-800 text-xs"
-                  onClick={() => handleCopy(localLicense.ApiKey)}
+                  onClick={() => window.open("https://console.cloud.google.com/apis/credentials?inv=1&invt=Abwt5A&project=test-interne-uniquement&pli=1", "_blank")}
                 >
-                  <Copy className="h-4 w-4 inline mr-1" />
-                  Copier
+                  <ExternalLink className="h-4 w-4 inline mr-1" />
+                  Générer
                 </button>
               </div>
             </Label>
